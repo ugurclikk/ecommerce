@@ -3,7 +3,11 @@ import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'models/recent_model.dart';
+import 'ui/add_jobs.dart';
 import 'ui/login_register.dart';
+
+//flutter run -d chrome --web-renderer html
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +16,7 @@ void main() async {
       options: FirebaseOptions(
           apiKey: "AIzaSyD-5q8GvQtDDh3dMMWlObIV5nI8LpfVYoU",
           authDomain: "ecommercee-b9bf7.firebaseapp.com",
+          databaseURL: "https://ecommercee-b9bf7-default-rtdb.firebaseio.com",
           projectId: "ecommercee-b9bf7",
           storageBucket: "ecommercee-b9bf7.appspot.com",
           messagingSenderId: "842540677343",
@@ -28,7 +33,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jobify',
       theme: ThemeData.light(),
-      home: HomePage(), //LoginRegisterPage(),
+      home: InputPage(), //LoginRegisterPage(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -66,7 +66,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _header(BuildContext context) {
-    final RecentModel ctrl = Get.find();
     return Container(
       margin: EdgeInsets.symmetric(vertical: 12),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -126,7 +125,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
+/*
   Widget _recommendedSection(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -155,16 +154,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  void addsaved(BuildContext context) {
-    savedJobList.add(_recommendedJob(context,
-        company: "DropBox",
-        img: Images.dropbox,
-        title: "Reserch Assist",
-        sub: "\$45,000 Remote",
-        isActive: true,
-        isSaved: false));
-  }
+*/
 
   Widget _recommendedJob(
     BuildContext context, {
@@ -268,14 +258,16 @@ class _HomePageState extends State<HomePage> {
             "Recent posted",
             style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: recentJobglobal.length,
-            itemBuilder: (BuildContext context, int index) {
-              return recentJobglobal[index];
-            },
-          ),
+          Obx(
+            () => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: _controller.listlengt(),
+              itemBuilder: (BuildContext context, int index) {
+                return _controller.list[index];
+              },
+            ),
+          )
         ],
       ),
     );
@@ -292,21 +284,7 @@ class _HomePageState extends State<HomePage> {
     String seachTitle = title;
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, JobDetailPage.getJobDetail());
-        setState(() {
-          savedJobListt.add(_recommendedJob(context,
-              img: Images.dropbox,
-              title: "Dropbox",
-              company: "UX Designer",
-              sub: "\$95,000",
-              isSaved: false));
-          _recommendedJob(context,
-              img: Images.dropbox,
-              title: "Dropbox",
-              company: "UX Designer",
-              sub: "\$95,000",
-              isSaved: false);
-        });
+        Get.to(JobDetailPage.getJobDetail());
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -350,6 +328,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: KColors.background,
+        onPressed: () {
+          _controller.addList();
+        },
+        child: Icon(Icons.add),
+      ),
       backgroundColor: KColors.background,
       //bottomNavigationBar: BottomMenuBar(),
       body: SafeArea(
@@ -361,7 +346,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 _appBar(context),
                 _header(context),
-                _recommendedSection(context),
+                // _recommendedSection(context),
                 _recentPostedJob(context)
               ],
             ),

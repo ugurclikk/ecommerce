@@ -8,85 +8,77 @@ import '../ui/job_detail_page.dart';
 import 'package:get/get.dart';
 
 class RecentModel extends GetxController {
-  var list = [].obs; // Initialize list as an empty observable list
+  var list = [
+    _jobCard(
+        img: Images.gitlab,
+        title: "Gitlab",
+        subtitle: "UX Designer",
+        salery: "\$78,000"),
+  ].obs; 
 
-  void counter(BuildContext context) {
-    // Clear the list
-    list[0] = _recommendedJob(context,
-        img: Images.dropbox,
-        title: "Dropbox",
-        company: "UX Designer",
-        sub: "\$95,000",
-        isSaved: false); // Add new items to the list
-
+  void addList() {
+   
+    list.add(
+      _jobCard(
+          img: Images.gitlab,
+          title: "Gitla",
+          subtitle: "UX Designer",
+          salery: "\$78,000"),
+    );
     update(); // Trigger UI update if bound to widgets
+  }
+
+  int listlengt() {
+ 
+    update();
+    return list.length;
   }
 }
 
-Widget _recommendedJob(
-  BuildContext context, {
+Widget _jobCard({
   required String img,
-  required String company,
   required String title,
-  required String sub,
-  required bool isSaved,
-  bool isActive = false,
+  required String subtitle,
+  required String salery,
 }) {
-  return Padding(
-    padding: const EdgeInsets.only(right: 10),
-    child: GestureDetector(
-      onTap: () {
-        Navigator.push(context, JobDetailPage.getJobDetail());
-      },
-      child: AspectRatio(
-        aspectRatio: 1.3,
-        child: Container(
-          decoration: BoxDecoration(
-            color: isActive ? KColors.primary : Colors.white,
-            borderRadius: BorderRadius.circular(7),
+  return InkWell(
+    onTap: () {
+      Get.to(JobDetailPage());
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(color: Colors.white),
+      child: Row(
+        children: [
+          Container(
+            height: 40,
+            width: 40,
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: KColors.lightGrey,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Image.asset(img),
           ),
-          padding: EdgeInsets.all(16),
-          child: Column(
+          SizedBox(width: 10),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 30,
-                width: 30,
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isActive ? Colors.white : KColors.lightGrey,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Image.asset(img),
-              ),
-              SizedBox(height: 16),
-              Text(
-                company,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isActive ? Colors.white38 : KColors.subtitle,
-                ),
-              ),
-              SizedBox(height: 6),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isActive ? Colors.white : KColors.title,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 12, color: KColors.subtitle),
               ),
-              SizedBox(height: 6),
               Text(
-                sub,
+                subtitle,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: isActive ? Colors.white38 : KColors.subtitle,
-                ),
-              ),
+                    fontSize: 14,
+                    color: KColors.title,
+                    fontWeight: FontWeight.bold),
+              )
             ],
-          ),
-        ),
+          )
+        ],
       ),
     ),
   );
