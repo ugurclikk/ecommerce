@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
+import 'package:flutter_job_portal/ui/home_page.dart';
+
+List<Widget> savedJobList = List.empty();
+bool isSaved = false;
 
 class JobDetailPage extends StatefulWidget {
   JobDetailPage({Key? key}) : super(key: key);
@@ -70,13 +74,13 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 child:
                     Image.asset(Images.museum, height: 20, color: KColors.icon),
               ),
-              Expanded(
+              /*Expanded(
                 child:
                     Image.asset(Images.clock, height: 20, color: KColors.icon),
               ),
               Expanded(
                 child: Image.asset(Images.map, height: 20, color: KColors.icon),
-              ),
+              ),*/
             ],
           ),
           Divider(
@@ -181,13 +185,15 @@ class _JobDetailPageState extends State<JobDetailPage> {
             backgroundImage: AssetImage(img),
           ),
           SizedBox(height: 8),
-          Text(name, style: TextStyle(fontSize: 8 , color: KColors.subtitle)),
+          Text(name, style: TextStyle(fontSize: 8, color: KColors.subtitle)),
         ],
       ),
     );
   }
 
-  Widget _apply(BuildContext context) {
+  Widget _apply(
+    BuildContext context,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16),
       margin: EdgeInsets.only(top: 54),
@@ -215,14 +221,19 @@ class _JobDetailPageState extends State<JobDetailPage> {
             height: 50,
             width: 60,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  isSaved = !isSaved;
+                });
+              },
               style: ButtonStyle(
+                iconColor: MaterialStateProperty.all(Colors.green),
                 side: MaterialStateProperty.all(
                   BorderSide(color: KColors.primary),
                 ),
               ),
               child: Icon(
-                Icons.bookmark_border,
+                isSaved ? Icons.bookmark : Icons.bookmark_border,
                 color: KColors.primary,
               ),
             ),

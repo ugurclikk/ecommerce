@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
+import 'models/recent_model.dart';
 import 'ui/login_register.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // başlarken çek ve kullan bu ikili yapı gerekli
   await Firebase.initializeApp(
       options: FirebaseOptions(
           apiKey: "AIzaSyD-5q8GvQtDDh3dMMWlObIV5nI8LpfVYoU",
@@ -21,10 +24,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+    RecentModel _controller = Get.put(RecentModel());
+    return GetMaterialApp(
+      title: 'Jobify',
       theme: ThemeData.light(),
-      home: LoginRegisterPage(),
+      home: HomePage(), //LoginRegisterPage(),
       debugShowCheckedModeBanner: false,
     );
   }

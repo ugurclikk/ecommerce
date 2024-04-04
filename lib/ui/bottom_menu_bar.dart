@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 
 class BottomMenuBar extends StatefulWidget {
-  BottomMenuBar({ Key? key}) : super(key: key);
+  BottomMenuBar({Key? key}) : super(key: key);
 
   @override
   _BottomMenuBarState createState() => _BottomMenuBarState();

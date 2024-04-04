@@ -2,14 +2,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
-import 'package:flutter_job_portal/ui/bottom_menu_bar.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:flutter_job_portal/ui/login_register.dart';
+import 'package:get/get.dart';
+
+import '../models/recent_model.dart';
 
 List<Widget> recentJobglobal = List.empty();
+List<Widget> savedJobListt = List.empty();
+RecentModel _controller = Get.put(RecentModel());
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   Widget _appBar(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -19,6 +29,25 @@ class HomePage extends StatelessWidget {
             backgroundImage: AssetImage(Images.user1),
           ),
           Spacer(),
+          IconButton(
+            icon: Icon(Icons.home_outlined, color: KColors.primary),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.bookmark_border_rounded, color: KColors.icon),
+            onPressed: () {
+              setState(() {});
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.person_outline_rounded, color: KColors.icon),
+            onPressed: () {},
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
@@ -37,6 +66,7 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
+    final RecentModel ctrl = Get.find();
     return Container(
       margin: EdgeInsets.symmetric(vertical: 12),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -112,27 +142,28 @@ class HomePage extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: ListView(
+            child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              children: [
-                _recommendedJob(context,
-                    company: "Google",
-                    img: Images.google,
-                    title: "UX Designer",
-                    sub: "\$45,000 Remote",
-                    isActive: true),
-                _recommendedJob(context,
-                    company: "DropBox",
-                    img: Images.dropbox,
-                    title: "Reserch Assist",
-                    sub: "\$45,000 Remote",
-                    isActive: false)
-              ],
+              itemCount: savedJobListt.length,
+              itemBuilder: (BuildContext context, int index) {
+                return savedJobListt[index];
+                //todo
+              },
             ),
           ),
         ],
       ),
     );
+  }
+
+  void addsaved(BuildContext context) {
+    savedJobList.add(_recommendedJob(context,
+        company: "DropBox",
+        img: Images.dropbox,
+        title: "Reserch Assist",
+        sub: "\$45,000 Remote",
+        isActive: true,
+        isSaved: false));
   }
 
   Widget _recommendedJob(
@@ -141,6 +172,7 @@ class HomePage extends StatelessWidget {
     required String company,
     required String title,
     required String sub,
+    required bool isSaved,
     bool isActive = false,
   }) {
     return Padding(
@@ -256,10 +288,25 @@ class HomePage extends StatelessWidget {
     required String subtitle,
     required String salery,
   }) {
+    RecentModel _control = Get.find();
     String seachTitle = title;
     return GestureDetector(
       onTap: () {
         Navigator.push(context, JobDetailPage.getJobDetail());
+        setState(() {
+          savedJobListt.add(_recommendedJob(context,
+              img: Images.dropbox,
+              title: "Dropbox",
+              company: "UX Designer",
+              sub: "\$95,000",
+              isSaved: false));
+          _recommendedJob(context,
+              img: Images.dropbox,
+              title: "Dropbox",
+              company: "UX Designer",
+              sub: "\$95,000",
+              isSaved: false);
+        });
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -304,7 +351,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: KColors.background,
-      bottomNavigationBar: BottomMenuBar(),
+      //bottomNavigationBar: BottomMenuBar(),
       body: SafeArea(
         child: Container(
           width: MediaQuery.of(context).size.width,
