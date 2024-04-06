@@ -8,28 +8,23 @@ import '../ui/job_detail_page.dart';
 import 'package:get/get.dart';
 
 class RecentModel extends GetxController {
-  var list = [
-    _jobCard(
-        img: Images.gitlab,
-        title: "Gitlab",
-        subtitle: "UX Designer",
-        salery: "\$78,000"),
-  ].obs; 
+  var list = [].obs;
 
-  void addList() {
-   
+  void addList(
+      String img, String title, String subtitle, String salery, String id) {
     list.add(
       _jobCard(
-          img: Images.gitlab,
-          title: "Gitla",
-          subtitle: "UX Designer",
-          salery: "\$78,000"),
+        img: img,
+        title: title,
+        subtitle: subtitle,
+        salery: salery,
+        id: id,
+      ),
     );
     update(); // Trigger UI update if bound to widgets
   }
 
   int listlengt() {
- 
     update();
     return list.length;
   }
@@ -40,10 +35,11 @@ Widget _jobCard({
   required String title,
   required String subtitle,
   required String salery,
+  required String id,
 }) {
   return InkWell(
     onTap: () {
-      Get.to(JobDetailPage());
+      Get.to(JobDetailPage(), arguments: id);
     },
     child: Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -59,7 +55,7 @@ Widget _jobCard({
               color: KColors.lightGrey,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Image.asset(img),
+            child: Image.network(img),
           ),
           SizedBox(width: 10),
           Column(

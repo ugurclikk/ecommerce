@@ -4,14 +4,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'models/recent_model.dart';
 import 'ui/add_jobs.dart';
+import 'ui/job_detail_page.dart';
 import 'ui/login_register.dart';
 
 //flutter run -d chrome --web-renderer html
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // başlarken çek ve kullan bu ikili yapı gerekli
+
   await Firebase.initializeApp(
       options: FirebaseOptions(
           apiKey: "AIzaSyD-5q8GvQtDDh3dMMWlObIV5nI8LpfVYoU",
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jobify',
       theme: ThemeData.light(),
-      home: InputPage(), //LoginRegisterPage(),
+      home: HomePage(), //LoginRegisterPage() //todo change before release
       debugShowCheckedModeBanner: false,
     );
   }

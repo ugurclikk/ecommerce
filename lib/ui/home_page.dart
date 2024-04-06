@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
@@ -7,10 +8,12 @@ import 'package:flutter_job_portal/ui/login_register.dart';
 import 'package:get/get.dart';
 
 import '../models/recent_model.dart';
+import 'add_jobs.dart';
 
 List<Widget> recentJobglobal = List.empty();
 List<Widget> savedJobListt = List.empty();
 RecentModel _controller = Get.put(RecentModel());
+FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,6 +23,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    GetDatas();
+  }
+
+  Future<void> GetDatas() async {
+    RecentModel _control = Get.find();
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) String uid = user.uid;
+      QuerySnapshot querySnapshot = await firestore.collection('users').get();
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _control.addList(data["Image URL"], data["Title"], data["Subtitle"],
+              data["Salary"], data["jobs_id"]);
+        });
+      });
+      print('Veri Çekildi');
+      // dataList içindeki verileri kullanabilirsiniz
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
+
   Widget _appBar(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -226,7 +255,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _recentPostedJob(BuildContext context) {
-    List<Widget> recentJobList = [
+    /* List<Widget> recentJobList = [
       _jobCard(context,
           img: Images.gitlab,
           title: "Gitlab",
@@ -248,7 +277,7 @@ class _HomePageState extends State<HomePage> {
           subtitle: "UX Designer",
           salery: "\$95,000"),
     ];
-    recentJobglobal = recentJobList;
+    recentJobglobal = recentJobList;*/
     return Container(
       margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       child: Column(
@@ -258,21 +287,35 @@ class _HomePageState extends State<HomePage> {
             "Recent posted",
             style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
           ),
-          Obx(
-            () => ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: _controller.listlengt(),
-              itemBuilder: (BuildContext context, int index) {
-                return _controller.list[index];
-              },
-            ),
-          )
+          StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('users').snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Bir hata oluştu: ${snapshot.error}');
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else {
+                  return Obx(
+                    () => ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: _controller.listlengt(),
+                      itemBuilder: (BuildContext context, int index) {
+                        return _controller.list[index];
+                      },
+                    ),
+                  );
+                }
+              }),
         ],
       ),
     );
   }
 
+/*
   Widget _jobCard(
     BuildContext context, {
     required String img,
@@ -324,14 +367,14 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         backgroundColor: KColors.background,
         onPressed: () {
-          _controller.addList();
+          Get.to(InputPage());
         },
         child: Icon(Icons.add),
       ),

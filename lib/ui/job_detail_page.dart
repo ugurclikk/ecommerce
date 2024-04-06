@@ -1,10 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_job_portal/models/recent_model.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 
 List<Widget> savedJobList = List.empty();
 bool isSaved = false;
+FirebaseFirestore firestore = FirebaseFirestore.instance;
+List<Map<String, dynamic>> dataList = [];
+bool flag = true;
 
 class JobDetailPage extends StatefulWidget {
   JobDetailPage({Key? key}) : super(key: key);
@@ -20,6 +27,46 @@ class JobDetailPage extends StatefulWidget {
 }
 
 class _JobDetailPageState extends State<JobDetailPage> {
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    dataList.clear();
+    flag = true;
+  }
+
+  RecentModel _controller = Get.find();
+  Future<void> GetData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) String uid = user.uid;
+      QuerySnapshot querySnapshot = await firestore.collection('users').get();
+      for (int i = 0; i < querySnapshot.size; i++) {
+        querySnapshot.docs.forEach((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          if (Get.arguments == data["jobs_id"] && flag) {
+            setState(() {
+              dataList.add(data);
+            });
+            flag = false;
+          }
+        });
+      }
+
+      print('Veri Çekildi');
+      // dataList içindeki verileri kullanabilirsiniz
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    GetData();
+  }
+
   Widget _header(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 26, vertical: 26),
@@ -35,7 +82,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Gitlab",
+                    dataList[0]["Title"],
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -44,7 +91,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "UX Designer",
+                    dataList[0]["Subtitle"],
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -58,9 +105,13 @@ class _JobDetailPageState extends State<JobDetailPage> {
           SizedBox(height: 32),
           Row(
             children: [
-              _headerStatic("Salary", "\$85,000"),
-              _headerStatic("Applicants", "45"),
-              _headerStatic("Salary", "\$120,000"),
+              _headerStatic(
+                "Salary",
+                dataList[0]["Salary"],
+              ),
+              _headerStatic("Applicants",
+                  "45"), //todo add storage and increase every applying
+              _headerStatic("Salary", dataList[0]["Salary"]),
             ],
           ),
           SizedBox(height: 40),
@@ -126,11 +177,12 @@ class _JobDetailPageState extends State<JobDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Job Description",
+            "Job Description", //dataList[0]["Descriptipn"]
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 20),
           Text(
+            //dataList[0]["Descriptipn"]
             "You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
             style: TextStyle(fontSize: 14, color: KColors.subtitle),
           ),

@@ -3,11 +3,17 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_job_portal/ui/home_page.dart';
+import 'package:get/get.dart';
 import 'package:path/path.dart' as Path;
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
+import '../models/recent_model.dart';
 
 final FirebaseStorage storage = FirebaseStorage.instance;
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
+String id = "";
 Future<void> downloadFile(String filePath) async {
   try {
     String downloadURL = await storage.ref(filePath).getDownloadURL();
@@ -28,10 +34,25 @@ Future<void> uploadFile(File file) async {
   }
 }
 
-Future<void> addData(Map<String, dynamic> Data) async {
+Future<void> addDataToFirestore(Map<String, dynamic> data) async {
   try {
-    await firestore.collection('jobs').add(Data);
-    print('Veri eklendi');
+    // Kullanıcıyı al
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Kullanıcının UID'sini al
+      String uid = user.uid;
+
+      // Firestore koleksiyon referansı oluştur
+      CollectionReference collectionReference =
+          FirebaseFirestore.instance.collection('users');
+
+      // Kullanıcının UID'siyle belge oluştur
+      await collectionReference.doc(uid).set(data);
+
+      print('Veri eklendi');
+    } else {
+      print('Kullanıcı giriş yapmamış');
+    }
   } catch (e) {
     print('Hata: $e');
   }
@@ -43,6 +64,7 @@ class InputPage extends StatefulWidget {
 }
 
 class _InputPageState extends State<InputPage> {
+  RecentModel _controller = Get.find();
   String img = "";
   String imgUrl = "";
   late html.File imageFile;
@@ -72,24 +94,38 @@ class _InputPageState extends State<InputPage> {
   }
 
   Future<void> uploadImageToFirebaseStorage(html.File file) async {
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(file);
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Kullanıcının UID'sini al
+      String uid = user.uid;
 
-    await reader.onLoadEnd.first;
-    final Uint8List fileBytes = reader.result as Uint8List;
+      // Storage referansı oluştur
 
-    final fileName = file.name;
+      final reader = html.FileReader();
+      reader.readAsArrayBuffer(file);
 
-    // Upload to Firebase Storage
-    Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
-    UploadTask uploadTask = storageRef.putData(fileBytes);
+      await reader.onLoadEnd.first;
+      final Uint8List fileBytes = reader.result as Uint8List;
 
-    TaskSnapshot snapshot = await uploadTask;
-    imgUrl = await snapshot.ref.getDownloadURL();
-    setState(() {
-      imgUrl = imgUrl;
-    });
-    print('File uploaded to Firebase Storage. Download URL: $imgUrl');
+      //final fileName = file.name;
+
+      // Upload to Firebase Storage
+      Reference storageRef =
+          FirebaseStorage.instance.ref().child('users/$uid/jobImage.jpg');
+      UploadTask uploadTask = storageRef.putData(fileBytes);
+
+      TaskSnapshot snapshot = await uploadTask;
+      imgUrl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        imgUrl = imgUrl;
+      });
+      print('File uploaded to Firebase Storage. Download URL: $imgUrl');
+    }
+  }
+
+  String generateUID() {
+    var uuid = Uuid();
+    return uuid.v4();
   }
 
   @override
@@ -152,16 +188,19 @@ class _InputPageState extends State<InputPage> {
               onPressed: () async {
                 // Formu göndermek için buraya gerekli işlemleri ekleyin
                 Map<String, dynamic> formData = {
+                  "jobs_id": id,
                   'Image URL': imgUrl,
                   'Title': title,
                   'Subtitle': subtitle,
                   'Salary': salary,
                 };
                 await uploadImageToFirebaseStorage(imageFile);
-                addData(formData);
-                setState(() {
+                addDataToFirestore(formData);
+                /*setState(() {
+                  _controller.addList(imgUrl, title, subtitle, salary,id);
                   flag = !flag;
-                });
+                });*/
+                Get.to(HomePage(), arguments: id);
               },
               child: Text('Submit'),
             ),
