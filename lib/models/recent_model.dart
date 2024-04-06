@@ -28,6 +28,11 @@ class RecentModel extends GetxController {
     update();
     return list.length;
   }
+
+  void clearlist() {
+    list.clear();
+    update();
+  }
 }
 
 Widget _jobCard({
@@ -55,7 +60,10 @@ Widget _jobCard({
               color: KColors.lightGrey,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Image.network(img),
+            child: Image.network(
+              img,
+              scale: 5.0,
+            ),
           ),
           SizedBox(width: 10),
           Column(

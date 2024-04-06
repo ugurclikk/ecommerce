@@ -39,9 +39,13 @@ class _JobDetailPageState extends State<JobDetailPage> {
   Future<void> GetData() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) String uid = user.uid;
-      QuerySnapshot querySnapshot = await firestore.collection('users').get();
-      for (int i = 0; i < querySnapshot.size; i++) {
+      if (user != null) {
+        String uid = user.uid;
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('added_jobs')
+            .get();
         querySnapshot.docs.forEach((doc) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
           if (Get.arguments == data["jobs_id"] && flag) {
@@ -51,10 +55,10 @@ class _JobDetailPageState extends State<JobDetailPage> {
             flag = false;
           }
         });
-      }
 
-      print('Veri Çekildi');
-      // dataList içindeki verileri kullanabilirsiniz
+        print('Veri Çekildi');
+        // dataList içindeki verileri kullanabilirsiniz
+      }
     } catch (e) {
       print('Hata: $e');
     }
@@ -63,8 +67,8 @@ class _JobDetailPageState extends State<JobDetailPage> {
   @override
   void initState() {
     // TODO: implement initState
+
     super.initState();
-    GetData();
   }
 
   Widget _header(BuildContext context) {
@@ -82,7 +86,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    dataList[0]["Title"],
+                    !dataList.isEmpty ? dataList[0]["Title"] : "",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -91,7 +95,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    dataList[0]["Subtitle"],
+                    !dataList.isEmpty ? dataList[0]["Subtitle"] : "",
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -107,11 +111,12 @@ class _JobDetailPageState extends State<JobDetailPage> {
             children: [
               _headerStatic(
                 "Salary",
-                dataList[0]["Salary"],
+                !dataList.isEmpty ? dataList[0]["Salary"] : "",
               ),
               _headerStatic("Applicants",
                   "45"), //todo add storage and increase every applying
-              _headerStatic("Salary", dataList[0]["Salary"]),
+              // _headerStatic(
+              //    "Salary", !dataList.isEmpty ? dataList[0]["Salary"] : ""),
             ],
           ),
           SizedBox(height: 40),
@@ -285,7 +290,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 ),
               ),
               child: Icon(
-                isSaved ? Icons.bookmark : Icons.bookmark_border,
+                dataList[0]["isSaved"] ? Icons.bookmark : Icons.bookmark_border,
                 color: KColors.primary,
               ),
             ),
@@ -297,6 +302,8 @@ class _JobDetailPageState extends State<JobDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    GetData();
+    Future.delayed(Duration(seconds: 5));
     return Scaffold(
       appBar: AppBar(
         backgroundColor: KColors.background,

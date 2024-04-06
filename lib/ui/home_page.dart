@@ -6,6 +6,7 @@ import 'package:flutter_job_portal/theme/images.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:flutter_job_portal/ui/login_register.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 
 import '../models/recent_model.dart';
 import 'add_jobs.dart';
@@ -33,20 +34,36 @@ class _HomePageState extends State<HomePage> {
     RecentModel _control = Get.find();
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) String uid = user.uid;
-      QuerySnapshot querySnapshot = await firestore.collection('users').get();
-      querySnapshot.docs.forEach((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        setState(() {
-          _control.addList(data["Image URL"], data["Title"], data["Subtitle"],
-              data["Salary"], data["jobs_id"]);
+      if (user != null) {
+        QuerySnapshot usersSnapshot =
+            await FirebaseFirestore.instance.collection('users').get();
+
+        usersSnapshot.docs.forEach((userDoc) async {
+          if (userDoc.exists) {
+            QuerySnapshot addedJobsSnapshot =
+                await userDoc.reference.collection('added_jobs').get();
+            addedJobsSnapshot.docs.forEach((doc) {
+              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              setState(() {
+                _control.addList(data["Image URL"], data["Title"],
+                    data["Subtitle"], data["Salary"], data["jobs_id"]);
+              });
+            });
+          }
         });
-      });
-      print('Veri Çekildi');
-      // dataList içindeki verileri kullanabilirsiniz
+        print('Veri Çekildi');
+        // dataList içindeki verileri kullanabilirsiniz
+      }
     } catch (e) {
       print('Hata: $e');
     }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _controller.clearlist();
+    super.dispose();
   }
 
   Widget _appBar(BuildContext context) {

@@ -14,6 +14,7 @@ import '../models/recent_model.dart';
 final FirebaseStorage storage = FirebaseStorage.instance;
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
 String id = "";
+String url = "";
 Future<void> downloadFile(String filePath) async {
   try {
     String downloadURL = await storage.ref(filePath).getDownloadURL();
@@ -47,7 +48,7 @@ Future<void> addDataToFirestore(Map<String, dynamic> data) async {
           FirebaseFirestore.instance.collection('users');
 
       // Kullanıcının UID'siyle belge oluştur
-      await collectionReference.doc(uid).set(data);
+      await collectionReference.doc(uid).collection("added_jobs").add(data);
 
       print('Veri eklendi');
     } else {
@@ -93,7 +94,7 @@ class _InputPageState extends State<InputPage> {
     });
   }
 
-  Future<void> uploadImageToFirebaseStorage(html.File file) async {
+  Future<String?> uploadImageToFirebaseStorage(html.File file) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       // Kullanıcının UID'sini al
@@ -117,9 +118,11 @@ class _InputPageState extends State<InputPage> {
       TaskSnapshot snapshot = await uploadTask;
       imgUrl = await snapshot.ref.getDownloadURL();
       setState(() {
-        imgUrl = imgUrl;
+        url = imgUrl;
       });
+
       print('File uploaded to Firebase Storage. Download URL: $imgUrl');
+      return imgUrl;
     }
   }
 
@@ -140,8 +143,9 @@ class _InputPageState extends State<InputPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             GestureDetector(
-              onTap:
-                  _getImageAndUploadToFirebase, // Fotoğraf seçme işlevi buraya ekleniyor
+              onTap: () async {
+                await _getImageAndUploadToFirebase();
+              }, // Fotoğraf seçme işlevi buraya ekleniyor
               child: Container(
                 width: 200,
                 height: 200,
@@ -186,16 +190,22 @@ class _InputPageState extends State<InputPage> {
             SizedBox(height: 20),
             TextButton(
               onPressed: () async {
+                id = generateUID();
+                String? imageurl =
+                    await uploadImageToFirebaseStorage(imageFile);
                 // Formu göndermek için buraya gerekli işlemleri ekleyin
                 Map<String, dynamic> formData = {
                   "jobs_id": id,
-                  'Image URL': imgUrl,
+                  'Image URL': imageurl,
                   'Title': title,
                   'Subtitle': subtitle,
                   'Salary': salary,
+                  "isSaved":false
                 };
-                await uploadImageToFirebaseStorage(imageFile);
-                addDataToFirestore(formData);
+                _controller.clearlist();
+                addDataToFirestore(formData)
+                    .then((value) => Get.to(HomePage(), arguments: id));
+
                 /*setState(() {
                   _controller.addList(imgUrl, title, subtitle, salary,id);
                   flag = !flag;
