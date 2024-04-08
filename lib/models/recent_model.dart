@@ -9,10 +9,23 @@ import 'package:get/get.dart';
 
 class RecentModel extends GetxController {
   var list = [].obs;
-
+  var savedlist = [].obs;
   void addList(
       String img, String title, String subtitle, String salery, String id) {
     list.add(
+      _jobCard(
+        img: img,
+        title: title,
+        subtitle: subtitle,
+        salery: salery,
+        id: id,
+      ),
+    );
+    update(); // Trigger UI update if bound to widgets
+  }
+   void addSavedList(
+      String img, String title, String subtitle, String salery, String id) {
+    savedlist.add(
       _jobCard(
         img: img,
         title: title,
@@ -28,6 +41,11 @@ class RecentModel extends GetxController {
     update();
     return list.length;
   }
+   int listsavedlengt() {
+    update();
+    return list.length;
+  }
+
 
   void clearlist() {
     list.clear();
@@ -71,7 +89,10 @@ Widget _jobCard({
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 12, color: KColors.subtitle),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: KColors.subtitle,
+                ),
               ),
               Text(
                 subtitle,

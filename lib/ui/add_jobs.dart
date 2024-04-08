@@ -1,18 +1,28 @@
+import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
+import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as Path;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recent_model.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 final FirebaseStorage storage = FirebaseStorage.instance;
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
+TextEditingController _titleController = TextEditingController();
+TextEditingController _subtitleController = TextEditingController();
+TextEditingController _salaryController = TextEditingController();
+TextEditingController _descriptionController = TextEditingController();
+final _formKey = GlobalKey<FormState>();
 String id = "";
 String url = "";
 Future<void> downloadFile(String filePath) async {
@@ -72,6 +82,7 @@ class _InputPageState extends State<InputPage> {
   String title = "";
   String subtitle = "";
   String salary = "";
+  String Description = "";
   bool flag = true;
   Future<void> _getImageAndUploadToFirebase() async {
     final html.FileUploadInputElement input = html.FileUploadInputElement();
@@ -109,10 +120,10 @@ class _InputPageState extends State<InputPage> {
       final Uint8List fileBytes = reader.result as Uint8List;
 
       //final fileName = file.name;
-
+      String str = generateUID();
       // Upload to Firebase Storage
       Reference storageRef =
-          FirebaseStorage.instance.ref().child('users/$uid/jobImage.jpg');
+          FirebaseStorage.instance.ref().child('users/$uid/jobImage-$str.jpg');
       UploadTask uploadTask = storageRef.putData(fileBytes);
 
       TaskSnapshot snapshot = await uploadTask;
@@ -131,95 +142,228 @@ class _InputPageState extends State<InputPage> {
     return uuid.v4();
   }
 
+  String generateShortUuid() {
+    var uuid = Uuid();
+    var base64Uuid = base64Url.encode(uuid.v4().codeUnits);
+    return base64Uuid.substring(0, 4); // Örneğin, ilk 8 karakteri alıyoruz
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Input Form'),
+        backgroundColor: KColors.background,
+        iconTheme: IconThemeData(color: KColors.primary),
+        elevation: 0,
+        centerTitle: true,
+        title: Text('Jobs Detail Form'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            GestureDetector(
-              onTap: () async {
-                await _getImageAndUploadToFirebase();
-              }, // Fotoğraf seçme işlevi buraya ekleniyor
-              child: Container(
-                width: 200,
-                height: 200,
-                color: Colors.grey[200],
-                child: img.isNotEmpty
-                    ? Image.network(
-                        img,
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(
-                        Icons.add_a_photo,
-                        size: 50,
-                        color: Colors.grey[400],
+      body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('lib/images/jobs.jpg'),
+          fit: BoxFit.fitWidth,
+        )),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.only(top: 15),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Color.fromARGB(141, 62, 97, 237)),
+            width: 600,
+            height: 700,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Center(
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _getImageAndUploadToFirebase();
+                        }, // Fotoğraf seçme işlevi buraya ekleniyor
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          color: KColors.background,
+                          child: img.isNotEmpty
+                              ? Image.network(
+                                  img,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(
+                                  Icons.add_a_photo,
+                                  size: 50,
+                                  color: Colors.grey[400],
+                                ),
+                        ),
                       ),
+                    ),
+                    SizedBox(height: 15),
+                    TextFormField(
+                      
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelStyle:
+                            TextStyle(color: Colors.black38, fontSize: 20),
+                        labelText: 'Title',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Title';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          title = value;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    TextFormField(
+                      
+                      controller: _subtitleController,
+                      decoration: InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelStyle:
+                            TextStyle(color: Colors.black38, fontSize: 20),
+                        labelText: 'Subtitle',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Subtitle';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          subtitle = value;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    TextFormField(
+                      controller: _salaryController,
+                      
+                      decoration: InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelStyle:
+                            TextStyle(color: Colors.black38, fontSize: 20),
+                        labelText: 'Salary',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Salary';
+                        }
+                        if (!(value.isNum)) {
+                          return 'Please enter numbers';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          salary = value;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 15),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 6,
+                      minLines: 6,
+                      
+                      decoration: InputDecoration(
+                        //isDense: true,
+                        //contentPadding: EdgeInsets.fromLTRB(0, 150, 150, 0),
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelStyle:
+                            TextStyle(color: Colors.black38, fontSize: 20),
+                        labelText: 'Description',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Description';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          Description = value;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Center(
+                      child: TextButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            print("debug");
+                          }
+                          id = generateUID();
+                          String? imageurl =
+                              await uploadImageToFirebaseStorage(imageFile);
+                          // Formu göndermek için buraya gerekli işlemleri ekleyin
+                          Map<String, dynamic> formData = {
+                            "jobs_id": id,
+                            'Image URL': imageurl,
+                            'Title': title,
+                            'Subtitle': subtitle,
+                            'Salary': salary,
+                            'Description': Description,
+                            "isSaved": false
+                          };
+                          _controller.clearlist();
+                          addDataToFirestore(formData).then(
+                              (value) => Get.to(HomePage(), arguments: id));
+
+                          /*setState(() {
+                            _controller.addList(imgUrl, title, subtitle, salary,id);
+                            flag = !flag;
+                          });*/
+                          Get.to(HomePage(), arguments: id);
+                        },
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 20),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Title'),
-              onChanged: (value) {
-                setState(() {
-                  title = value;
-                });
-              },
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Subtitle'),
-              onChanged: (value) {
-                setState(() {
-                  subtitle = value;
-                });
-              },
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Salary'),
-              onChanged: (value) {
-                setState(() {
-                  salary = value;
-                });
-              },
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () async {
-                id = generateUID();
-                String? imageurl =
-                    await uploadImageToFirebaseStorage(imageFile);
-                // Formu göndermek için buraya gerekli işlemleri ekleyin
-                Map<String, dynamic> formData = {
-                  "jobs_id": id,
-                  'Image URL': imageurl,
-                  'Title': title,
-                  'Subtitle': subtitle,
-                  'Salary': salary,
-                  "isSaved":false
-                };
-                _controller.clearlist();
-                addDataToFirestore(formData)
-                    .then((value) => Get.to(HomePage(), arguments: id));
-
-                /*setState(() {
-                  _controller.addList(imgUrl, title, subtitle, salary,id);
-                  flag = !flag;
-                });*/
-                Get.to(HomePage(), arguments: id);
-              },
-              child: Text('Submit'),
-            ),
-            flag
-                ? Placeholder(
-                    fallbackHeight: 2,
-                  )
-                : Image.network(imgUrl),
-          ],
+          ),
         ),
       ),
     );

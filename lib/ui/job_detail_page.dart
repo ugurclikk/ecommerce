@@ -4,6 +4,7 @@ import 'package:flutter_job_portal/models/recent_model.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +13,7 @@ bool isSaved = false;
 FirebaseFirestore firestore = FirebaseFirestore.instance;
 List<Map<String, dynamic>> dataList = [];
 bool flag = true;
+bool SavedFlag = true;
 
 class JobDetailPage extends StatefulWidget {
   JobDetailPage({Key? key}) : super(key: key);
@@ -33,32 +35,58 @@ class _JobDetailPageState extends State<JobDetailPage> {
     super.dispose();
     dataList.clear();
     flag = true;
+    SavedFlag = true;
   }
 
   RecentModel _controller = Get.find();
   Future<void> GetData() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String uid = user.uid;
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+
+      usersSnapshot.docs.forEach((userDoc) async {
+        String currentID = "";
+        if (userDoc.exists) {
+          QuerySnapshot addedJobsSnapshot =
+              await userDoc.reference.collection('added_jobs').get();
+          addedJobsSnapshot.docs.forEach((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            setState(() {
+              if (Get.arguments == data["jobs_id"] && flag) {
+                setState(() {
+                  print(data);
+                  dataList.add(data);
+                  currentID = data["jobs_id"];
+                });
+                flag = false;
+              }
+            });
+          });
+        }
+        String uid = "";
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // Kullanıcının UID'sini al
+          uid = user.uid;
+        }
+
+        QuerySnapshot savedJobsSnapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
-            .collection('added_jobs')
+            .collection("saved_jobs")
             .get();
-        querySnapshot.docs.forEach((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          if (Get.arguments == data["jobs_id"] && flag) {
+        savedJobsSnapshot.docs.forEach((doc) {
+          Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
+          if (savedData["jobs_id"] == currentID && SavedFlag) {
+            SavedFlag = false;
             setState(() {
-              dataList.add(data);
+              isSaved = savedData["isSaved"];
             });
-            flag = false;
           }
         });
-
-        print('Veri Çekildi');
-        // dataList içindeki verileri kullanabilirsiniz
-      }
+      });
+      print('Veri Çekildi-Detail');
+      // dataList içindeki verileri kullanabilirsiniz
     } catch (e) {
       print('Hata: $e');
     }
@@ -67,7 +95,8 @@ class _JobDetailPageState extends State<JobDetailPage> {
   @override
   void initState() {
     // TODO: implement initState
-
+    GetData();
+    Future.delayed(Duration(seconds: 5));
     super.initState();
   }
 
@@ -78,30 +107,32 @@ class _JobDetailPageState extends State<JobDetailPage> {
         children: [
           Row(
             children: [
-              Image.asset(Images.gitlab, height: 40),
+              Image.network(dataList[0]["Image URL"], height: 40),
               SizedBox(
                 width: 30,
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    !dataList.isEmpty ? dataList[0]["Title"] : "",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: KColors.title,
-                    ),
-                  ),
+                  !dataList.isEmpty
+                      ? Text(dataList[0]["Title"],
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: KColors.title,
+                          ))
+                      : CircularProgressIndicator(),
                   SizedBox(height: 5),
-                  Text(
-                    !dataList.isEmpty ? dataList[0]["Subtitle"] : "",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: KColors.subtitle,
-                    ),
-                  )
+                  !dataList.isEmpty
+                      ? Text(
+                          dataList[0]["Subtitle"],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: KColors.subtitle,
+                          ),
+                        )
+                      : CircularProgressIndicator()
                 ],
               )
             ],
@@ -187,17 +218,17 @@ class _JobDetailPageState extends State<JobDetailPage> {
           ),
           SizedBox(height: 20),
           Text(
-            //dataList[0]["Descriptipn"]
-            "You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
+            dataList[0]["Description"],
+            //"You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
             style: TextStyle(fontSize: 14, color: KColors.subtitle),
           ),
-          TextButton(
+          /*TextButton(
             onPressed: () {},
             style: ButtonStyle(
                 padding: MaterialStateProperty.all(EdgeInsets.zero)),
             child: Text("Learn more",
                 style: TextStyle(fontSize: 14, color: KColors.primary)),
-          )
+          )*/
         ],
       ),
     );
@@ -278,10 +309,31 @@ class _JobDetailPageState extends State<JobDetailPage> {
             height: 50,
             width: 60,
             child: OutlinedButton(
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   isSaved = !isSaved;
                 });
+                String uid = "";
+                User? user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  // Kullanıcının UID'sini al
+                  uid = user.uid;
+                }
+                Map<String, dynamic> savedMap = {
+                  "jobs_id": dataList[0]["jobs_id"],
+                  'Image URL': dataList[0]["Image URL"],
+                  'Title': dataList[0]["Title"],
+                  'Subtitle': dataList[0]["Subtitle"],
+                  'Salary': dataList[0]["Salary"],
+                  'Description': dataList[0]["Description"],
+                  "isSaved": isSaved,
+                };
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection("saved_jobs")
+                    .doc(dataList[0]["jobs_id"])
+                    .set(savedMap);
               },
               style: ButtonStyle(
                 iconColor: MaterialStateProperty.all(Colors.green),
@@ -290,7 +342,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 ),
               ),
               child: Icon(
-                dataList[0]["isSaved"] ? Icons.bookmark : Icons.bookmark_border,
+                isSaved ? Icons.bookmark : Icons.bookmark_border,
                 color: KColors.primary,
               ),
             ),
@@ -302,8 +354,6 @@ class _JobDetailPageState extends State<JobDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    GetData();
-    Future.delayed(Duration(seconds: 5));
     return Scaffold(
       appBar: AppBar(
         backgroundColor: KColors.background,

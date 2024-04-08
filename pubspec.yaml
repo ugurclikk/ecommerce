@@ -23,15 +23,15 @@ environment:
 dependencies:
   cloud_firestore: ^4.16.0
   cupertino_icons: ^1.0.2
-  firebase_auth: ^4.18.0
+  firebase_auth: ^4.19.0
+  firebase_auth_web: ^5.11.0
+  firebase_storage: ^11.7.0
   flutter:
     sdk: flutter
-  get: ^4.6.5
+  get: ^4.6.6
   image_picker: ^1.0.7
   material_design_icons_flutter: ^7.0.7296
   provider: ^6.1.2
-  firebase_auth_web: ^5.11.0
-  firebase_storage: ^11.7.0
   uuid: ^4.3.3
 dev_dependencies:
   flutter_test:

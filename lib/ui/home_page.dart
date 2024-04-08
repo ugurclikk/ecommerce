@@ -7,13 +7,13 @@ import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:flutter_job_portal/ui/login_register.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import '../models/recent_model.dart';
 import 'add_jobs.dart';
+import 'saved_jobs.dart';
 
 List<Widget> recentJobglobal = List.empty();
 List<Widget> savedJobListt = List.empty();
-RecentModel _controller = Get.put(RecentModel());
 FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 class HomePage extends StatefulWidget {
@@ -24,6 +24,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  RecentModel _controller = Get.put(RecentModel());
   @override
   void initState() {
     super.initState();
@@ -33,27 +34,24 @@ class _HomePageState extends State<HomePage> {
   Future<void> GetDatas() async {
     RecentModel _control = Get.find();
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        QuerySnapshot usersSnapshot =
-            await FirebaseFirestore.instance.collection('users').get();
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection('users').get();
 
-        usersSnapshot.docs.forEach((userDoc) async {
-          if (userDoc.exists) {
-            QuerySnapshot addedJobsSnapshot =
-                await userDoc.reference.collection('added_jobs').get();
-            addedJobsSnapshot.docs.forEach((doc) {
-              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-              setState(() {
-                _control.addList(data["Image URL"], data["Title"],
-                    data["Subtitle"], data["Salary"], data["jobs_id"]);
-              });
+      usersSnapshot.docs.forEach((userDoc) async {
+        if (userDoc.exists) {
+          QuerySnapshot addedJobsSnapshot =
+              await userDoc.reference.collection('added_jobs').get();
+          addedJobsSnapshot.docs.forEach((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            setState(() {
+              _control.addList(data["Image URL"], data["Title"],
+                  data["Subtitle"], data["Salary"], data["jobs_id"]);
             });
-          }
-        });
-        print('Veri Çekildi');
-        // dataList içindeki verileri kullanabilirsiniz
-      }
+          });
+        }
+      });
+      print('Veri Çekildi');
+      // dataList içindeki verileri kullanabilirsiniz
     } catch (e) {
       print('Hata: $e');
     }
@@ -87,7 +85,9 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.bookmark_border_rounded, color: KColors.icon),
             onPressed: () {
-              setState(() {});
+              setState(() {
+                Get.to(SavedJobs());
+              });
             },
           ),
           IconButton(
@@ -304,29 +304,16 @@ class _HomePageState extends State<HomePage> {
             "Recent posted",
             style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
           ),
-          StreamBuilder(
-              stream:
-                  FirebaseFirestore.instance.collection('users').snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError) {
-                  return Text('Bir hata oluştu: ${snapshot.error}');
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                } else {
-                  return Obx(
-                    () => ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: _controller.listlengt(),
-                      itemBuilder: (BuildContext context, int index) {
-                        return _controller.list[index];
-                      },
-                    ),
-                  );
-                }
-              }),
+          Obx(
+            () => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: _controller.listlengt(),
+              itemBuilder: (BuildContext context, int index) {
+                return _controller.list[index];
+              },
+            ),
+          ),
         ],
       ),
     );
