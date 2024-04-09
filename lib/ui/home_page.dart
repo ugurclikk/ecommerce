@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import '../models/recent_model.dart';
 import 'add_jobs.dart';
 import 'saved_jobs.dart';
+import 'search_bar.dart';
 import 'user_profile_ui.dart';
 
 List<Widget> recentJobglobal = List.empty();
@@ -149,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                         color: KColors.lightGrey,
                         borderRadius: BorderRadius.circular(5)),
                     child:
-                        SearchBar() /* Text(
+                        SearchBarr() /* Text(
                     "What are you looking for?",
                     style: TextStyle(fontSize: 15, color: KColors.subtitle),
                   ),*/
@@ -158,18 +159,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 width: 16,
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: KColors.primary,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                height: 40,
-                child: IconButton(
-                  color: KColors.primary,
-                  icon: Icon(Icons.search, color: Colors.white),
-                  onPressed: () {},
-                ),
-              )
+              
             ],
           )
         ],

@@ -1,45 +1,107 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_job_portal/models/recent_model.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
+import 'package:get/get.dart';
 
-class SearchBar extends StatefulWidget {
+class SearchBarr extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final String hintText;
 
-  const SearchBar({Key? key, this.onChanged, this.hintText = 'What are you looking for?'}) : super(key: key);
+  const SearchBarr(
+      {Key? key, this.onChanged, this.hintText = 'What are you looking for?'})
+      : super(key: key);
 
   @override
   _SearchBarState createState() => _SearchBarState();
 }
 
-class _SearchBarState extends State<SearchBar> {
+class _SearchBarState extends State<SearchBarr> {
   TextEditingController _controller = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_onTextChanged);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  RecentModel controller = Get.put(RecentModel());
+  late Future<void> _searchFuture;
 
   void _onTextChanged() {
-    if (widget.onChanged != null) {
-      widget.onChanged!(_controller.text);
+    setState(() {
+      print(_controller.text);
+      _searchFuture = GetDatasearch();
+    });
+  }
+
+  Future<void> GetDatasearch() async {
+    try {
+      int addedCount = 0;
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+
+      usersSnapshot.docs.forEach((userDoc) async {
+        if (userDoc.exists) {
+          QuerySnapshot addedJobsSnapshot =
+              await userDoc.reference.collection('added_jobs').get();
+
+          addedJobsSnapshot.docs.forEach((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            String title = data["Title"];
+            if (_controller.text.toUpperCase() ==
+                title.substring(0, _controller.text.length).toUpperCase()) {
+                 addedCount++;    
+              if ( addedCount> 0 ) {
+                controller.addList(data["Image URL"], data["Title"],
+                    data["Subtitle"], data["Salary"], data["jobs_id"]);
+               
+              }
+            }
+          });
+        }
+      });
+      print('Veri Çekildi-search');
+    } catch (e) {
+      print('Hata: $e');
     }
-   
+  }
+
+  Future<void> GetDataAll() async {
+    try {
+      controller.list.clear();
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+
+      usersSnapshot.docs.forEach((userDoc) async {
+        if (userDoc.exists) {
+          QuerySnapshot addedJobsSnapshot =
+              await userDoc.reference.collection('added_jobs').get();
+          addedJobsSnapshot.docs.forEach((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+            controller.addList(data["Image URL"], data["Title"],
+                data["Subtitle"], data["Salary"], data["jobs_id"]);
+          });
+        }
+      });
+      print('Veri Çekildi-search');
+    } catch (e) {
+      print('Hata: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: TextField(
+      child: TextFormField(
         controller: _controller,
+        onChanged: (value) => {
+          if (value.isEmpty)
+            {GetDataAll()}
+          else
+            {
+              setState(() {
+                controller.clearlist();
+                _onTextChanged();
+              })
+            }
+        },
         decoration: InputDecoration(
           labelText: widget.hintText,
           prefixIcon: Icon(Icons.search),

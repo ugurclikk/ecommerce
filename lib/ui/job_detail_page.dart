@@ -35,7 +35,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
     super.dispose();
     dataList.clear();
     flag = true;
-    SavedFlag = true;
+    isSaved = false;
   }
 
   RecentModel _controller = Get.find();
@@ -54,10 +54,10 @@ class _JobDetailPageState extends State<JobDetailPage> {
             setState(() {
               if (Get.arguments == data["jobs_id"] && flag) {
                 //setState(() {
-                  print(data);
-                  dataList.add(data);
-                  currentID = data["jobs_id"];
-              //  });
+                print(data);
+                dataList.add(data);
+                currentID = data["jobs_id"];
+                //  });
                 flag = false;
               }
             });
@@ -68,25 +68,25 @@ class _JobDetailPageState extends State<JobDetailPage> {
         if (user != null) {
           // Kullanıcının UID'sini al
           uid = user.uid;
-        
 
-        QuerySnapshot savedJobsSnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection("saved_jobs")
-            .get();
-        savedJobsSnapshot.docs.forEach((doc) {
-          Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
-          if (savedData["jobs_id"] == currentID && SavedFlag) {
-            SavedFlag = false;
-            
-              isSaved = savedData["isSaved"];
-          
-          }
-          
-        });}
+          QuerySnapshot savedJobsSnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection("saved_jobs")
+              .get();
+          savedJobsSnapshot.docs.forEach((doc) {
+            Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
+            if (savedData["jobs_id"] == currentID && SavedFlag) {
+              SavedFlag = false;
+
+              setState(() {
+                isSaved = savedData["isSaved"];
+              });
+            }
+          });
+        }
       });
-       setState(() { });
+
       print('Veri Çekildi-Detail');
       // dataList içindeki verileri kullanabilirsiniz
     } catch (e) {
@@ -376,15 +376,17 @@ class _JobDetailPageState extends State<JobDetailPage> {
           IconButton(icon: Icon(Icons.cloud_upload_outlined), onPressed: () {})
         ],
       ),
-      body: dataList.length>0? Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _header(context),
-          _jobDescription(context),
-          _ourPeople(context),
-          _apply(context)
-        ],
-      ):Center(child: CircularProgressIndicator()),
+      body: dataList.length > 0
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _header(context),
+                _jobDescription(context),
+                _ourPeople(context),
+                _apply(context)
+              ],
+            )
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }
