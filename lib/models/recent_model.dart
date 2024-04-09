@@ -43,7 +43,7 @@ class RecentModel extends GetxController {
   }
    int listsavedlengt() {
     update();
-    return list.length;
+    return savedlist.length;
   }
 
 

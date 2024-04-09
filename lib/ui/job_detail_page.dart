@@ -53,22 +53,22 @@ class _JobDetailPageState extends State<JobDetailPage> {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             setState(() {
               if (Get.arguments == data["jobs_id"] && flag) {
-                setState(() {
+                //setState(() {
                   print(data);
                   dataList.add(data);
                   currentID = data["jobs_id"];
-                });
+              //  });
                 flag = false;
               }
             });
           });
         }
         String uid = "";
-        User? user = FirebaseAuth.instance.currentUser;
+        User? user = await FirebaseAuth.instance.currentUser;
         if (user != null) {
           // Kullanıcının UID'sini al
           uid = user.uid;
-        }
+        
 
         QuerySnapshot savedJobsSnapshot = await FirebaseFirestore.instance
             .collection('users')
@@ -79,12 +79,14 @@ class _JobDetailPageState extends State<JobDetailPage> {
           Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
           if (savedData["jobs_id"] == currentID && SavedFlag) {
             SavedFlag = false;
-            setState(() {
+            
               isSaved = savedData["isSaved"];
-            });
+          
           }
-        });
+          
+        });}
       });
+       setState(() { });
       print('Veri Çekildi-Detail');
       // dataList içindeki verileri kullanabilirsiniz
     } catch (e) {
@@ -95,6 +97,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
   @override
   void initState() {
     // TODO: implement initState
+    print("init");
     GetData();
     Future.delayed(Duration(seconds: 5));
     super.initState();
@@ -313,6 +316,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 setState(() {
                   isSaved = !isSaved;
                 });
+
                 String uid = "";
                 User? user = FirebaseAuth.instance.currentUser;
                 if (user != null) {
@@ -328,12 +332,21 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   'Description': dataList[0]["Description"],
                   "isSaved": isSaved,
                 };
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(uid)
-                    .collection("saved_jobs")
-                    .doc(dataList[0]["jobs_id"])
-                    .set(savedMap);
+                if (isSaved) {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(uid)
+                      .collection("saved_jobs")
+                      .doc(dataList[0]["jobs_id"])
+                      .set(savedMap);
+                } else {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(uid)
+                      .collection("saved_jobs")
+                      .doc(dataList[0]["jobs_id"])
+                      .delete();
+                }
               },
               style: ButtonStyle(
                 iconColor: MaterialStateProperty.all(Colors.green),
@@ -363,7 +376,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           IconButton(icon: Icon(Icons.cloud_upload_outlined), onPressed: () {})
         ],
       ),
-      body: Column(
+      body: dataList.length>0? Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _header(context),
@@ -371,7 +384,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           _ourPeople(context),
           _apply(context)
         ],
-      ),
+      ):Center(child: CircularProgressIndicator()),
     );
   }
 }

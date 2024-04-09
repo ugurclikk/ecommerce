@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import '../models/recent_model.dart';
 import 'add_jobs.dart';
 import 'saved_jobs.dart';
+import 'user_profile_ui.dart';
 
 List<Widget> recentJobglobal = List.empty();
 List<Widget> savedJobListt = List.empty();
@@ -70,7 +71,8 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundImage: AssetImage(Images.user1),
+            
+            backgroundImage: AssetImage("lib/images/icon.png"),
           ),
           Spacer(),
           IconButton(
@@ -86,13 +88,16 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.bookmark_border_rounded, color: KColors.icon),
             onPressed: () {
               setState(() {
-                Get.to(SavedJobs());
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => SavedJobs()));
               });
             },
           ),
           IconButton(
             icon: Icon(Icons.person_outline_rounded, color: KColors.icon),
-            onPressed: () {},
+            onPressed: () {
+              Get.to(UserProfilePage());
+            },
           ),
           IconButton(
             icon: Icon(Icons.logout),

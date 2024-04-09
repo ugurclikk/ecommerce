@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
+import 'package:flutter_job_portal/ui/job_detail_page.dart';
 
 class SearchBar extends StatefulWidget {
   final ValueChanged<String>? onChanged;
