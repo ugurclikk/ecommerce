@@ -14,6 +14,11 @@ import 'package:file_selector/file_selector.dart';
 
 import 'job_detail_page.dart';
 
+String name = "";
+String surname = "";
+String phoneNumber = "";
+String cvUrl = "";
+
 class UserProfilePage extends StatefulWidget {
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
@@ -29,6 +34,63 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String _pdf = "";
 
   late html.File imageFile;
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  Future<void> getData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+
+        // Firestore'dan kullanıcı bilgilerini çek
+        DocumentSnapshot userInfoSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection("profile_info")
+            .doc(uid)
+            .get();
+
+        if (userInfoSnapshot.exists) {
+          // Firestore'dan alınan verileri kullanarak bir nesne oluştur
+          Map<String, dynamic> userData =
+              userInfoSnapshot.data() as Map<String, dynamic>;
+          setState(() {
+            name = userData['name'];
+            surname = userData['surname'];
+            phoneNumber = userData['phoneNumber'];
+            cvUrl = userData['cv_url'];
+          });
+
+          print(userData);
+          // Oluşturulan nesneyi kullanarak istediğiniz işlemleri gerçekleştirin
+          // Örneğin, bir AlertDialog gösterin
+          /*showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('User Information'),
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [],
+                ),
+              );
+            },
+          );*/
+        } else {
+          print('Kullanıcı bilgileri bulunamadı');
+        }
+      } else {
+        print('Kullanıcı bulunamadı');
+      }
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
 
   Future<void> _getImageAndUploadToFirebase() async {
     final html.FileUploadInputElement input = html.FileUploadInputElement();
@@ -45,7 +107,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
       reader.readAsDataUrl(file);
       reader.onLoadEnd.listen((event) {
         setState(() {
-          _pdf = reader.result as String;
+          if (mounted) {
+            _pdf = reader.result as String;
+          }
         });
       });
     });
@@ -105,7 +169,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final String phoneNumber = _phoneNumberController.text.trim();
 
     // Firestore'a kullanıcı bilgilerini ekle
-  
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       // Kullanıcının UID'sini al
@@ -128,32 +192,39 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       TaskSnapshot snapshot = await uploadTask;
       _pdf = await snapshot.ref.getDownloadURL();
+      String link="";
 
-      uploadTask.whenComplete(() async {
-        // Dosyanın indirme URL'sini al
-
-        // Indirme URL'sini kullanarak Firebase Firestore'a kaydet
-        ;
-        String uid = "";
-        User? user = await FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          // Kullanıcının UID'sini al
-          uid = user.uid;
-        }
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection("profile_info")
-            .doc(uid)
-            .set({
-          'name': name,
-          'surname': surname,
-          'phoneNumber': phoneNumber,
-          'cv_url': _pdf,
+      if (_pdf != "") {
+        setState(() {
+          link = _pdf;
         });
+        uploadTask.whenComplete(() async {
+          // Dosyanın indirme URL'sini al
 
-        print('PDF yükleme ve Firestore kaydı tamamlandı');
-      });
+          // Indirme URL'sini kullanarak Firebase Firestore'a kaydet
+          ;
+          String uid = "";
+          User? user = await FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            // Kullanıcının UID'sini al
+            uid = user.uid;
+          }
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection("profile_info")
+              .doc(uid)
+              .set({
+            'name': name,
+            'surname': surname,
+            'phoneNumber': phoneNumber,
+            'cv_url': link,
+          });
+
+          print('PDF yükleme ve Firestore kaydı tamamlandı');
+        });
+      }
+
       print('File uploaded to Firebase Storage. Download URL: $_pdf');
       return _pdf;
     }
@@ -161,107 +232,114 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Get.to(HomePage());
-            },
-          ),
-          backgroundColor: KColors.primary,
-          title: Text('User Profile'),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Get.to(HomePage());
+          },
         ),
-        body: Container(
-          color: KColors.background,
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Name:',
-                style: TextStyle(
-                  color: KColors.title,
-                  fontSize: 18.0,
+        backgroundColor: KColors.primary,
+        title: Text('User Profile'),
+      ),
+      body: Container(
+        color: KColors.background,
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: $name'),
+            Text('Surname: $surname'),
+            Text('Phone Number: $phoneNumber'),
+            Text('CV URL: $cvUrl'),
+            Text(
+              'Name:',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: name,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 8.0),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'Surname:',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: _surnameController,
+              decoration: InputDecoration(
+                hintText: surname,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                'Surname:',
-                style: TextStyle(
-                  color: KColors.title,
-                  fontSize: 18.0,
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'Phone Number:',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: _phoneNumberController,
+              decoration: InputDecoration(
+                hintText: phoneNumber,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              SizedBox(height: 8.0),
-              TextField(
-                controller: _surnameController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 16.0),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    await _getImageAndUploadToFirebase();
+                    // _saveProfile(context);
+                  },
+                  child: Text('Select CV(pdf)'),
                 ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                'Phone Number:',
-                style: TextStyle(
-                  color: KColors.title,
-                  fontSize: 18.0,
-                ),
-              ),
-              SizedBox(height: 8.0),
-              TextField(
-                controller: _phoneNumberController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 16.0),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _getImageAndUploadToFirebase();
-                     // _saveProfile(context);
-                    },
-                    child: Text('Select CV(pdf)'),
-                  ),
-                     _pdf.isNotEmpty ? Text("   Pdf is Uploaded"):Text(""),
-                ],
-              ),
-              SizedBox(height: 16.0),
-              SizedBox(
-                width: double.infinity,
-                child: 
-                    ElevatedButton(
-                      onPressed: () => _saveProfile(context),
-                      child: Text('Save'),
-                    ),
-               
-                 
-              ),
-            ],
-          ),
+                _pdf.isNotEmpty ? Text("   Pdf is Uploaded") : Text(""),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            _pdf != ""
+                ? ElevatedButton(
+                    onPressed: () => _saveProfile(context),
+                    child: Text('Save'),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(12)),
+                    height: 28,
+                    width: 50,
+                    child: Center(child: Text('Save'))),
+          ],
         ),
       ),
     );

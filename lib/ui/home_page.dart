@@ -29,11 +29,21 @@ class _HomePageState extends State<HomePage> {
   RecentModel _controller = Get.put(RecentModel());
   @override
   void initState() {
-    super.initState();
-    GetDatas();
+  super.initState();
+  initializeData();
+}
+
+Future<void> initializeData() async {
+  try {
+    
+    await GetDatas();
+  } catch (e) {
+    print('Hata: $e');
   }
+}
 
   Future<void> GetDatas() async {
+    
     RecentModel _control = Get.find();
     try {
       QuerySnapshot usersSnapshot =
@@ -72,7 +82,6 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         children: [
           CircleAvatar(
-            
             backgroundImage: AssetImage("lib/images/icon.png"),
           ),
           Spacer(),
@@ -159,7 +168,6 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 width: 16,
               ),
-              
             ],
           )
         ],

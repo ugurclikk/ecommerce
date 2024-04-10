@@ -5,6 +5,8 @@ import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:get/get.dart';
 
+bool flags = true;
+
 class SearchBarr extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final String hintText;
@@ -45,11 +47,10 @@ class _SearchBarState extends State<SearchBarr> {
             String title = data["Title"];
             if (_controller.text.toUpperCase() ==
                 title.substring(0, _controller.text.length).toUpperCase()) {
-                 addedCount++;    
-              if ( addedCount> 0 ) {
+              addedCount++;
+              if (addedCount > 0 && controller.listlengt() < addedCount) {
                 controller.addList(data["Image URL"], data["Title"],
                     data["Subtitle"], data["Salary"], data["jobs_id"]);
-               
               }
             }
           });
@@ -63,6 +64,7 @@ class _SearchBarState extends State<SearchBarr> {
 
   Future<void> GetDataAll() async {
     try {
+      int i = 0;
       controller.list.clear();
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
@@ -71,11 +73,17 @@ class _SearchBarState extends State<SearchBarr> {
         if (userDoc.exists) {
           QuerySnapshot addedJobsSnapshot =
               await userDoc.reference.collection('added_jobs').get();
-          addedJobsSnapshot.docs.forEach((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-            controller.addList(data["Image URL"], data["Title"],
-                data["Subtitle"], data["Salary"], data["jobs_id"]);
+          addedJobsSnapshot.docs.forEach((doc) {
+            i++;
+            if (flags) {
+              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              controller.addList(data["Image URL"], data["Title"],
+                  data["Subtitle"], data["Salary"], data["jobs_id"]);
+            }
+            if (i >= addedJobsSnapshot.size) {
+              flags = false;
+            }
           });
         }
       });
@@ -91,16 +99,18 @@ class _SearchBarState extends State<SearchBarr> {
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         controller: _controller,
-        onChanged: (value) => {
-          if (value.isEmpty)
-            {GetDataAll()}
-          else
-            {
-              setState(() {
-                controller.clearlist();
-                _onTextChanged();
-              })
-            }
+        onChanged: (value) async {
+          if (value.isEmpty) {
+            await GetDataAll();
+            setState(() {
+              controller.list.clear();
+            });
+          } else {
+            setState(() {
+              controller.clearlist();
+              _onTextChanged();
+            });
+          }
         },
         decoration: InputDecoration(
           labelText: widget.hintText,

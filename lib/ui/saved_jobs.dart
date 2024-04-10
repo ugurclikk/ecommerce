@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
@@ -34,30 +35,36 @@ class _MyAppState extends State<SavedJobs> {
 
   RecentModel _controller = Get.put(RecentModel());
   Future<void> GetDatas() async {
-    try {
-      QuerySnapshot usersSnapshot =
-          await FirebaseFirestore.instance.collection('users').get();
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Kullanıcının UID'sini al
+      String uid = user.uid;
 
-      usersSnapshot.docs.forEach((userDoc) async {
-        if (userDoc.exists) {
-          QuerySnapshot addedJobsSnapshot =
-              await userDoc.reference.collection('saved_jobs').get();
-          addedJobsSnapshot.docs.forEach((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            setState(() {
-              _controller.addSavedList(data["Image URL"], data["Title"],
-                  data["Subtitle"], data["Salary"], data["jobs_id"]);
-            });
-          });
-        }
+      // Kullanıcının UID'sine göre kaydedilen işleri getir
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('saved_jobs')
+          .get();
+
+      userSnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _controller.addSavedList(data["Image URL"], data["Title"],
+              data["Subtitle"], data["Salary"], data["jobs_id"]);
+        });
       });
-      print('Veri Çekildi-saved');
 
-      // dataList içindeki verileri kullanabilirsiniz
-    } catch (e) {
-      print('Hata: $e');
+      print('Veri Çekildi-saved');
+    } else {
+      print('Kullanıcı bulunamadı.');
     }
+  } catch (e) {
+    print('Hata: $e');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
