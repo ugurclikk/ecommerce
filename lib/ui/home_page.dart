@@ -17,6 +17,8 @@ import 'user_profile_ui.dart';
 List<Widget> recentJobglobal = List.empty();
 List<Widget> savedJobListt = List.empty();
 FirebaseFirestore firestore = FirebaseFirestore.instance;
+String dropdownValue_name = "Title";
+bool dropdownValue_order = false;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -29,21 +31,54 @@ class _HomePageState extends State<HomePage> {
   RecentModel _controller = Get.put(RecentModel());
   @override
   void initState() {
-  super.initState();
-  initializeData();
-}
-
-Future<void> initializeData() async {
-  try {
-    
-    await GetDatas();
-  } catch (e) {
-    print('Hata: $e');
+    super.initState();
+    initializeData();
   }
-}
+
+  Future<void> initializeData() async {
+    try {
+      await GetDatas();
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
+
+  Widget dropdownbutton(List<String> list) {
+    //const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+    return DropdownMenu<String>(
+      leadingIcon: Icon(Icons.onetwothree_rounded),
+      trailingIcon: Icon(Icons.arrow_downward_rounded),
+      initialSelection: list.first,
+      onSelected: (String? value) async {
+        // This is called when the user selects an item.
+        setState(() {
+          switch (value) {
+            case "ascending":
+              dropdownValue_order = false;
+              break;
+            case "descending":
+              dropdownValue_order = true;
+              break;
+            case "Salary":
+              dropdownValue_name = value!;
+              break;
+            case "Name":
+              dropdownValue_name = "Title";
+              break;
+
+            default:
+          }
+        });
+        _controller.clearlist();
+        await GetDatas();
+      },
+      dropdownMenuEntries: list.map<DropdownMenuEntry<String>>((String value) {
+        return DropdownMenuEntry<String>(value: value, label: value);
+      }).toList(),
+    );
+  }
 
   Future<void> GetDatas() async {
-    
     RecentModel _control = Get.find();
     try {
       QuerySnapshot usersSnapshot =
@@ -51,8 +86,10 @@ Future<void> initializeData() async {
 
       usersSnapshot.docs.forEach((userDoc) async {
         if (userDoc.exists) {
-          QuerySnapshot addedJobsSnapshot =
-              await userDoc.reference.collection('added_jobs').get();
+          QuerySnapshot addedJobsSnapshot = await userDoc.reference
+              .collection("added_jobs")
+              .orderBy(dropdownValue_name, descending: dropdownValue_order)
+              .get();
           addedJobsSnapshot.docs.forEach((doc) {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             setState(() {
@@ -275,6 +312,11 @@ Future<void> initializeData() async {
   }
 
   Widget _recentPostedJob(BuildContext context) {
+    const List<String> orderlist = <String>['ascending', 'descending'];
+    const List<String> namelist = <String>[
+      'Salary',
+      'Name',
+    ];
     /* List<Widget> recentJobList = [
       _jobCard(context,
           img: Images.gitlab,
@@ -303,9 +345,22 @@ Future<void> initializeData() async {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Recent posted",
-            style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
+          Row(
+            children: [
+              Text(
+                "Recent posted",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: KColors.title),
+              ),
+              SizedBox(
+                width: 8,
+              ),
+              dropdownbutton(orderlist),
+              SizedBox(
+                width: 8,
+              ),
+              dropdownbutton(namelist),
+            ],
           ),
           Obx(
             () => ListView.builder(

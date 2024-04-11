@@ -68,7 +68,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           print(userData);
           // Oluşturulan nesneyi kullanarak istediğiniz işlemleri gerçekleştirin
           // Örneğin, bir AlertDialog gösterin
-          /*showDialog(
+          /* showDialog(
             context: context,
             builder: (context) {
               return AlertDialog(
@@ -107,9 +107,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       reader.readAsDataUrl(file);
       reader.onLoadEnd.listen((event) {
         setState(() {
-          if (mounted) {
-            _pdf = reader.result as String;
-          }
+          _pdf = reader.result as String;
         });
       });
     });
@@ -139,21 +137,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
 
     // Firestore'a kullanıcı bilgilerini ekle
-    await uploadImageToFirebaseStorage(imageFile);
+    //await uploadImageToFirebaseStorage(imageFile);
 
     // PDF yükleniyorsa Firebase Storage'a yükle
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Profile saved successfully.'),
-      ),
-    );
-
-    // Profil başarıyla kaydedildi, giriş alanlarını temizle
-    _nameController.clear();
-    _surnameController.clear();
-    _phoneNumberController.clear();
-    _pdf = "";
   }
 
   bool isNumeric(String str) {
@@ -192,7 +178,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       TaskSnapshot snapshot = await uploadTask;
       _pdf = await snapshot.ref.getDownloadURL();
-      String link="";
+      String link = "";
 
       if (_pdf != "") {
         setState(() {
@@ -221,12 +207,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
             'cv_url': link,
           });
 
+          // Profil başarıyla kaydedildi, giriş alanlarını temizle
+          //Get.to(UserProfilePage());
+         
+          setState(() {
+            _nameController.clear();
+            _surnameController.clear();
+            _phoneNumberController.clear();
+            _pdf = "";
+          });
+           await getData();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Profile saved successfully.'),
+            ),
+          );
           print('PDF yükleme ve Firestore kaydı tamamlandı');
         });
       }
 
       print('File uploaded to Firebase Storage. Download URL: $_pdf');
-      return _pdf;
     }
   }
 
@@ -249,10 +249,37 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Name: $name'),
-            Text('Surname: $surname'),
-            Text('Phone Number: $phoneNumber'),
-            Text('CV URL: $cvUrl'),
+            Text(
+              'Name: $name',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'Surname: $surname',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'Phone Number: $phoneNumber',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'CV URL: $cvUrl',
+              style: TextStyle(
+                color: KColors.title,
+                fontSize: 18.0,
+              ),
+            ),
             Text(
               'Name:',
               style: TextStyle(
@@ -329,7 +356,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
             SizedBox(height: 16.0),
             _pdf != ""
                 ? ElevatedButton(
-                    onPressed: () => _saveProfile(context),
+                    onPressed: () async {
+                      _saveProfile(context);
+                      await uploadImageToFirebaseStorage(imageFile);
+                    },
                     child: Text('Save'),
                   )
                 : Container(

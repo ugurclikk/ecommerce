@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jobify',
       theme: ThemeData.light(),
-      home: HomePage(), //LoginRegisterPage() //todo change before release
+      home: LoginRegisterPage(), //LoginRegisterPage() //todo change before release
       debugShowCheckedModeBanner: false,
     );
   }

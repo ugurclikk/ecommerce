@@ -46,7 +46,7 @@ class _SearchBarState extends State<SearchBarr> {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             String title = data["Title"];
             if (_controller.text.toUpperCase() ==
-                title.substring(0, _controller.text.length).toUpperCase()) {
+                title.substring(0,  _controller.text.length<title.length?_controller.text.length:title.length).toUpperCase()) {
               addedCount++;
               if (addedCount > 0 && controller.listlengt() < addedCount) {
                 controller.addList(data["Image URL"], data["Title"],
@@ -81,9 +81,7 @@ class _SearchBarState extends State<SearchBarr> {
               controller.addList(data["Image URL"], data["Title"],
                   data["Subtitle"], data["Salary"], data["jobs_id"]);
             }
-            if (i >= addedJobsSnapshot.size) {
-              flags = false;
-            }
+            
           });
         }
       });

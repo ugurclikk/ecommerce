@@ -53,11 +53,11 @@ class _JobDetailPageState extends State<JobDetailPage> {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             setState(() {
               if (Get.arguments == data["jobs_id"] && flag) {
-                //setState(() {
-                print(data);
+                setState(() {
+               // print(data);
                 dataList.add(data);
                 currentID = data["jobs_id"];
-                //  });
+                 });
                 flag = false;
               }
             });
@@ -76,9 +76,9 @@ class _JobDetailPageState extends State<JobDetailPage> {
               .get();
           savedJobsSnapshot.docs.forEach((doc) {
             Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
-            if (savedData["jobs_id"] == currentID && SavedFlag) {
-              SavedFlag = false;
-
+            if (savedData["jobs_id"] == currentID ) {
+              
+              print(savedData);
               setState(() {
                 isSaved = savedData["isSaved"];
               });
@@ -86,7 +86,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           });
         }
       });
-
+      print(isSaved);
       print('Veri Çekildi-Detail');
       // dataList içindeki verileri kullanabilirsiniz
     } catch (e) {
