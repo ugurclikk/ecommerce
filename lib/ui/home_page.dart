@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
+import 'package:flutter_job_portal/ui/admin_panel.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
 import 'package:flutter_job_portal/ui/login_register.dart';
 import 'package:get/get.dart';
@@ -81,9 +82,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> GetDatas() async {
     RecentModel _control = Get.find();
     try {
+   
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
-
+      print(usersSnapshot.size);
       usersSnapshot.docs.forEach((userDoc) async {
         if (userDoc.exists) {
           QuerySnapshot addedJobsSnapshot = await userDoc.reference
@@ -93,8 +95,10 @@ class _HomePageState extends State<HomePage> {
           addedJobsSnapshot.docs.forEach((doc) {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             setState(() {
-              _control.addList(data["Image URL"], data["Title"],
-                  data["Subtitle"], data["Salary"], data["jobs_id"]);
+              if(addedJobsSnapshot.size>=_control.listlengt())
+              {_control.addList(data["Image URL"], data["Title"],
+                  data["Subtitle"], data["Salary"], data["jobs_id"]);}
+              
             });
           });
         }
@@ -436,7 +440,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: KColors.background,
         onPressed: () {
-          Get.to(InputPage());
+          Get.to(AdsPanel());
         },
         child: Icon(Icons.add),
       ),

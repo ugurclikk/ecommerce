@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_job_portal/models/recent_model.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
+import 'package:flutter_job_portal/ui/add_jobs.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+
+import 'job_application.dart';
 
 List<Widget> savedJobList = List.empty();
 bool isSaved = false;
@@ -14,6 +17,7 @@ FirebaseFirestore firestore = FirebaseFirestore.instance;
 List<Map<String, dynamic>> dataList = [];
 bool flag = true;
 bool SavedFlag = true;
+String job_id = "";
 
 class JobDetailPage extends StatefulWidget {
   JobDetailPage({Key? key}) : super(key: key);
@@ -54,10 +58,11 @@ class _JobDetailPageState extends State<JobDetailPage> {
             setState(() {
               if (Get.arguments == data["jobs_id"] && flag) {
                 setState(() {
-               // print(data);
-                dataList.add(data);
-                currentID = data["jobs_id"];
-                 });
+                  // print(data);
+                  dataList.add(data);
+                  currentID = data["jobs_id"];
+                  job_id = data["jobs_id"];
+                });
                 flag = false;
               }
             });
@@ -76,8 +81,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
               .get();
           savedJobsSnapshot.docs.forEach((doc) {
             Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
-            if (savedData["jobs_id"] == currentID ) {
-              
+            if (savedData["jobs_id"] == currentID) {
               print(savedData);
               setState(() {
                 isSaved = savedData["isSaved"];
@@ -296,7 +300,9 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   backgroundColor: MaterialStateProperty.all(KColors.primary),
                   padding: MaterialStateProperty.all(
                       EdgeInsets.symmetric(vertical: 16))),
-              onPressed: () {},
+              onPressed: () {
+                Get.to(JobApplicationPage(), arguments: job_id);
+              },
               child: Text(
                 "Apply Now",
                 style: TextStyle(
@@ -373,7 +379,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
         iconTheme: IconThemeData(color: KColors.primary),
         elevation: 1,
         actions: [
-          IconButton(icon: Icon(Icons.cloud_upload_outlined), onPressed: () {})
+          //IconButton(icon: Icon(Icons.cloud_upload_outlined), onPressed: () {})
         ],
       ),
       body: dataList.length > 0

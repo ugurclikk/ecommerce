@@ -11,14 +11,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
       options: FirebaseOptions(
-          apiKey: "AIzaSyD-5q8GvQtDDh3dMMWlObIV5nI8LpfVYoU",
-          authDomain: "ecommercee-b9bf7.firebaseapp.com",
-          databaseURL: "https://ecommercee-b9bf7-default-rtdb.firebaseio.com",
-          projectId: "ecommercee-b9bf7",
-          storageBucket: "ecommercee-b9bf7.appspot.com",
-          messagingSenderId: "842540677343",
-          appId: "1:842540677343:web:f1d3e7e9d97dd42ebf916a",
-          measurementId: "G-6Z27V71XMW"));
+    apiKey: "AIzaSyD-5q8GvQtDDh3dMMWlObIV5nI8LpfVYoU",
+    projectId: "ecommercee-b9bf7",
+    messagingSenderId: "842540677343",
+    appId: "1:842540677343:web:f1d3e7e9d97dd42ebf916a",
+  ));
 
   runApp(MyApp());
 }
@@ -31,7 +28,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jobify',
       theme: ThemeData.light(),
-      home: LoginRegisterPage(), //LoginRegisterPage() //todo change before release
+      home: HomePage(), //LoginRegisterPage() //todo change before release
       debugShowCheckedModeBanner: false,
     );
   }
