@@ -151,6 +151,12 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           IconButton(
+            icon: Icon(Icons.admin_panel_settings_outlined, color: KColors.icon),
+            onPressed: () {
+              Get.to(AdsPanel());
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -437,13 +443,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: KColors.background,
-        onPressed: () {
-          Get.to(AdsPanel());
-        },
-        child: Icon(Icons.add),
-      ),
+     
       backgroundColor: KColors.background,
       //bottomNavigationBar: BottomMenuBar(),
       body: SafeArea(
