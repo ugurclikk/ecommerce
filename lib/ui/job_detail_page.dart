@@ -149,7 +149,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
             children: [
               _headerStatic(
                 "Salary",
-                !dataList.isEmpty ? dataList[0]["Salary"] : "",
+                !dataList.isEmpty ? dataList[0]["Salary"].toString() : "",
               ),
               _headerStatic("Applicants",
                   "45"), //todo add storage and increase every applying
@@ -334,7 +334,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   'Image URL': dataList[0]["Image URL"],
                   'Title': dataList[0]["Title"],
                   'Subtitle': dataList[0]["Subtitle"],
-                  'Salary': dataList[0]["Salary"],
+                  'Salary':int.parse( dataList[0]["Salary"]),
                   'Description': dataList[0]["Description"],
                   "isSaved": isSaved,
                 };

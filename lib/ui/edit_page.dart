@@ -1,11 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 class EditAdPage extends StatefulWidget {
   final String userId;
   final String adId;
   final Map<String, dynamic> adData;
 
-  const EditAdPage({Key? key, required this.userId, required this.adId, required this.adData}) : super(key: key);
+  const EditAdPage(
+      {Key? key,
+      required this.userId,
+      required this.adId,
+      required this.adData})
+      : super(key: key);
 
   @override
   _EditAdPageState createState() => _EditAdPageState();
@@ -14,15 +20,17 @@ class EditAdPage extends StatefulWidget {
 class _EditAdPageState extends State<EditAdPage> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-late TextEditingController _SalaryController;
+  late TextEditingController _SalaryController;
   late TextEditingController _SubtitleController;
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.adData['Title']);
-    _descriptionController = TextEditingController(text: widget.adData['Description']);
-    _SalaryController = TextEditingController(text: widget.adData['Salary']);
-_SubtitleController = TextEditingController(text: widget.adData['Subtitle']);
+    _descriptionController =
+        TextEditingController(text: widget.adData['Description']);
+    _SalaryController = TextEditingController(text: widget.adData['Salary'].toString());
+    _SubtitleController =
+        TextEditingController(text: widget.adData['Subtitle']);
   }
 
   @override
@@ -39,7 +47,8 @@ _SubtitleController = TextEditingController(text: widget.adData['Subtitle']);
             TextField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
-            ),   TextField(
+            ),
+            TextField(
               controller: _SubtitleController,
               decoration: InputDecoration(labelText: 'SubTitle'),
             ),
@@ -68,7 +77,9 @@ _SubtitleController = TextEditingController(text: widget.adData['Subtitle']);
     // Save changes to Firestore and then navigate back
     String newTitle = _titleController.text;
     String newDescription = _descriptionController.text;
-
+    String salary = _SalaryController.text;
+    String subtitle = _SubtitleController.text;
+    print(widget.userId+" "+ widget.adId);
     // Update Firestore document with new data
     FirebaseFirestore.instance
         .collection('users')
@@ -78,6 +89,8 @@ _SubtitleController = TextEditingController(text: widget.adData['Subtitle']);
         .update({
       'Title': newTitle,
       'Description': newDescription,
+      'SubTitle': subtitle,
+      'Salary': int.parse(salary),
     }).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ad details updated successfully')),
@@ -88,12 +101,5 @@ _SubtitleController = TextEditingController(text: widget.adData['Subtitle']);
         SnackBar(content: Text('Failed to update ad details')),
       );
     });
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
   }
 }

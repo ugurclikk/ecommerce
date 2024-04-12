@@ -23,7 +23,8 @@ class RecentModel extends GetxController {
     );
     update(); // Trigger UI update if bound to widgets
   }
-   void addSavedList(
+
+  void addSavedList(
       String img, String title, String subtitle, String salery, String id) {
     savedlist.add(
       _jobCard(
@@ -41,11 +42,11 @@ class RecentModel extends GetxController {
     update();
     return list.length;
   }
-   int listsavedlengt() {
+
+  int listsavedlengt() {
     update();
     return savedlist.length;
   }
-
 
   void clearlist() {
     list.clear();
@@ -60,6 +61,7 @@ Widget _jobCard({
   required String salery,
   required String id,
 }) {
+  String title1 = title;
   return InkWell(
     onTap: () {
       Get.to(JobDetailPage(), arguments: id);

@@ -56,7 +56,7 @@ class _SearchBarState extends State<SearchBarr> {
               addedCount++;
               if (addedCount > 0 && controller.listlengt() < addedCount) {
                 controller.addList(data["Image URL"], data["Title"],
-                    data["Subtitle"], data["Salary"], data["jobs_id"]);
+                    data["Subtitle"], data["Salary"].toString(), data["jobs_id"]);
               }
             }
           });
@@ -85,14 +85,15 @@ class _SearchBarState extends State<SearchBarr> {
             if (flags) {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-              if (addedJobsSnapshot.size >= controller.listlengt()) {
+              
                 controller.addList(data["Image URL"], data["Title"],
-                    data["Subtitle"], data["Salary"], data["jobs_id"]);
-              }
+                    data["Subtitle"], data["Salary"].toString(), data["jobs_id"]);
+              
             }
           });
         }
       });
+     
       print('Veri Çekildi-search');
     } catch (e) {
       print('Hata: $e');

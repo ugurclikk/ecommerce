@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -64,6 +65,17 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
               );
             });
       });
+
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Kullanıcının UID'sini al
+        String uid = user.uid;
+
+        // Firestore koleksiyon referansı oluştur
+        CollectionReference collectionReference =
+            FirebaseFirestore.instance.collection('users');
+        await collectionReference.doc(uid).set({"access": "register"});
+      }
     } on FirebaseAuthException catch (e) {
       showDialog(
           context: context,

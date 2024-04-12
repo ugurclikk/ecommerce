@@ -56,7 +56,9 @@ Future<void> addDataToFirestore(Map<String, dynamic> data) async {
       // Firestore koleksiyon referansı oluştur
       CollectionReference collectionReference =
           FirebaseFirestore.instance.collection('users');
-
+      await collectionReference.doc(uid).set({
+        "access":"add data"
+      });
       // Kullanıcının UID'siyle belge oluştur
       await collectionReference.doc(uid).collection("added_jobs").add(data);
 
@@ -204,7 +206,6 @@ class _InputPageState extends State<InputPage> {
                     ),
                     SizedBox(height: 15),
                     TextFormField(
-                      
                       controller: _titleController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -233,7 +234,6 @@ class _InputPageState extends State<InputPage> {
                       height: 20,
                     ),
                     TextFormField(
-                      
                       controller: _subtitleController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -263,7 +263,6 @@ class _InputPageState extends State<InputPage> {
                     ),
                     TextFormField(
                       controller: _salaryController,
-                      
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                         labelStyle:
@@ -295,7 +294,6 @@ class _InputPageState extends State<InputPage> {
                       controller: _descriptionController,
                       maxLines: 6,
                       minLines: 6,
-                      
                       decoration: InputDecoration(
                         //isDense: true,
                         //contentPadding: EdgeInsets.fromLTRB(0, 150, 150, 0),
@@ -339,7 +337,7 @@ class _InputPageState extends State<InputPage> {
                             'Image URL': imageurl,
                             'Title': title,
                             'Subtitle': subtitle,
-                            'Salary': salary,
+                            'Salary': int.parse(salary),
                             'Description': Description,
                             "isSaved": false
                           };

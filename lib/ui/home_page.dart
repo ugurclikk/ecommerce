@@ -20,6 +20,7 @@ List<Widget> savedJobListt = List.empty();
 FirebaseFirestore firestore = FirebaseFirestore.instance;
 String dropdownValue_name = "Title";
 bool dropdownValue_order = false;
+List<Map<String, dynamic>> dataListe = [];
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -82,29 +83,64 @@ class _HomePageState extends State<HomePage> {
   Future<void> GetDatas() async {
     RecentModel _control = Get.find();
     try {
-   
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
-      print(usersSnapshot.size);
-      usersSnapshot.docs.forEach((userDoc) async {
-        if (userDoc.exists) {
-          QuerySnapshot addedJobsSnapshot = await userDoc.reference
-              .collection("added_jobs")
-              .orderBy(dropdownValue_name, descending: dropdownValue_order)
-              .get();
-          addedJobsSnapshot.docs.forEach((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            setState(() {
-              if(addedJobsSnapshot.size>=_control.listlengt())
-              {_control.addList(data["Image URL"], data["Title"],
-                  data["Subtitle"], data["Salary"], data["jobs_id"]);}
-              
-            });
+
+      for (var userDoc in usersSnapshot.docs) {
+        //print(userDoc.id);
+
+        QuerySnapshot addedJobsSnapshot = await userDoc.reference
+            .collection("added_jobs")
+            //.orderBy(dropdownValue_name, descending: dropdownValue_order)
+            .get();
+
+        for (var doc in addedJobsSnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          //print(data);
+          setState(() {
+            dataListe.add(data);
           });
+          /*_control.addList(data["Image URL"], data["Title"], data["Subtitle"],
+              data["Salary"].toString(), data["jobs_id"]);*/
         }
-      });
+      }
+      print(dataListe.length);
+  if(dropdownValue_name=="Salary")
+  {
+      dataListe.sort((a, b) => a["Salary"].compareTo(b["Salary"]));
+     // print("Sorted by Salary:");
+      //print(dataListe);
+      if(dropdownValue_order)
+      {dataListe=dataListe.reversed.toList();}
+      for (int j = 0; j < dataListe.length; j++) {
+        _control.addList(
+            dataListe[j]["Image URL"],
+            dataListe[j]["Title"],
+            dataListe[j]["Subtitle"],
+            dataListe[j]["Salary"].toString(),
+            dataListe[j]["jobs_id"]);
+      }
+      }
+    else if(dropdownValue_name=="Title")
+    {
+// Sort by Title
+      dataListe.sort((a, b) => a["Title"].compareTo(b["Title"]));
+     if(dropdownValue_order)
+      {dataListe=dataListe.reversed.toList();}
+      for (int j = 0; j < dataListe.length; j++) {
+        _control.addList(
+            dataListe[j]["Image URL"],
+            dataListe[j]["Title"],
+            dataListe[j]["Subtitle"],
+            dataListe[j]["Salary"].toString(),
+            dataListe[j]["jobs_id"]);
+      }
+    }
+      
+
+      print(dataListe);
       print('Veri Çekildi');
-      // dataList içindeki verileri kullanabilirsiniz
+      // You can use the data in the dataList here
     } catch (e) {
       print('Hata: $e');
     }
@@ -151,7 +187,8 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.admin_panel_settings_outlined, color: KColors.icon),
+            icon:
+                Icon(Icons.admin_panel_settings_outlined, color: KColors.icon),
             onPressed: () {
               Get.to(AdsPanel());
             },
@@ -324,8 +361,8 @@ class _HomePageState extends State<HomePage> {
   Widget _recentPostedJob(BuildContext context) {
     const List<String> orderlist = <String>['ascending', 'descending'];
     const List<String> namelist = <String>[
-      'Salary',
-      'Name',
+      'Name','Salary',
+      
     ];
     /* List<Widget> recentJobList = [
       _jobCard(context,
@@ -443,7 +480,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
       backgroundColor: KColors.background,
       //bottomNavigationBar: BottomMenuBar(),
       body: SafeArea(
