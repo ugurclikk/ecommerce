@@ -24,11 +24,11 @@ class _SearchBarState extends State<SearchBarr> {
   RecentModel controller = Get.put(RecentModel());
   late Future<void> _searchFuture;
 
-  void _onTextChanged() {
-    setState(() {
+  void _onTextChanged() async{
+    
       print(_controller.text);
-      _searchFuture = GetDatasearch();
-    });
+      await GetDatasearch();
+    
   }
 
   Future<void> GetDatasearch() async {
@@ -55,8 +55,12 @@ class _SearchBarState extends State<SearchBarr> {
                     .toUpperCase()) {
               addedCount++;
               if (addedCount > 0 && controller.listlengt() < addedCount) {
-                controller.addList(data["Image URL"], data["Title"],
-                    data["Subtitle"], data["Salary"].toString(), data["jobs_id"]);
+                controller.addList(
+                    data["Image URL"],
+                    data["Title"],
+                    data["Subtitle"],
+                    data["Salary"].toString(),
+                    data["jobs_id"],data["Description"]);
               }
             }
           });
@@ -70,8 +74,6 @@ class _SearchBarState extends State<SearchBarr> {
 
   Future<void> GetDataAll() async {
     try {
-      int i = 0;
-      controller.list.clear();
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
 
@@ -81,19 +83,16 @@ class _SearchBarState extends State<SearchBarr> {
               await userDoc.reference.collection('added_jobs').get();
 
           addedJobsSnapshot.docs.forEach((doc) {
-            i++;
             if (flags) {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-              
-                controller.addList(data["Image URL"], data["Title"],
-                    data["Subtitle"], data["Salary"].toString(), data["jobs_id"]);
-              
+              controller.addList(data["Image URL"], data["Title"],
+                  data["Subtitle"], data["Salary"].toString(), data["jobs_id"],data["Description"]);
             }
           });
         }
       });
-     
+
       print('Veri Çekildi-search');
     } catch (e) {
       print('Hata: $e');
@@ -108,15 +107,22 @@ class _SearchBarState extends State<SearchBarr> {
         controller: _controller,
         onChanged: (value) async {
           if (value.isEmpty) {
-            await GetDataAll();
             setState(() {
               controller.list.clear();
             });
-          } else {
-            setState(() {
-              controller.clearlist();
+
+            await Future.delayed(Duration(seconds: 2));
+            await GetDataAll();
+            flag = false;
+          } else { 
+            
+            controller.clearlist();
+             await Future.delayed(Duration(seconds: 2));
+            
+              flag = true;
+             
               _onTextChanged();
-            });
+            
           }
         },
         decoration: InputDecoration(

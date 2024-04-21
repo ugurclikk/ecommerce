@@ -83,6 +83,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> GetDatas() async {
     RecentModel _control = Get.find();
     try {
+      dataListe.clear();
+      dataList.clear();
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
 
@@ -96,7 +98,7 @@ class _HomePageState extends State<HomePage> {
 
         for (var doc in addedJobsSnapshot.docs) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          //print(data);
+          print(addedJobsSnapshot.size);
           setState(() {
             dataListe.add(data);
           });
@@ -104,41 +106,42 @@ class _HomePageState extends State<HomePage> {
               data["Salary"].toString(), data["jobs_id"]);*/
         }
       }
-      print(dataListe.length);
-  if(dropdownValue_name=="Salary")
-  {
-      dataListe.sort((a, b) => a["Salary"].compareTo(b["Salary"]));
-     // print("Sorted by Salary:");
-      //print(dataListe);
-      if(dropdownValue_order)
-      {dataListe=dataListe.reversed.toList();}
-      for (int j = 0; j < dataListe.length; j++) {
-        _control.addList(
-            dataListe[j]["Image URL"],
-            dataListe[j]["Title"],
-            dataListe[j]["Subtitle"],
-            dataListe[j]["Salary"].toString(),
-            dataListe[j]["jobs_id"]);
-      }
-      }
-    else if(dropdownValue_name=="Title")
-    {
-// Sort by Title
-      dataListe.sort((a, b) => a["Title"].compareTo(b["Title"]));
-     if(dropdownValue_order)
-      {dataListe=dataListe.reversed.toList();}
-      for (int j = 0; j < dataListe.length; j++) {
-        _control.addList(
-            dataListe[j]["Image URL"],
-            dataListe[j]["Title"],
-            dataListe[j]["Subtitle"],
-            dataListe[j]["Salary"].toString(),
-            dataListe[j]["jobs_id"]);
-      }
-    }
-      
 
-      print(dataListe);
+      if (dropdownValue_name == "Salary") {
+        dataListe.sort((a, b) => a["Salary"].compareTo(b["Salary"]));
+
+        if (dropdownValue_order) {
+          dataListe = dataListe.reversed.toList();
+        }
+        for (int j = 0; j < dataListe.length; j++) {
+          _control.addList(
+            dataListe[j]["Image URL"],
+            dataListe[j]["Title"],
+            dataListe[j]["Subtitle"],
+            dataListe[j]["Salary"].toString(),
+            dataListe[j]["jobs_id"],
+            dataListe[j]["Description"],
+          );
+        }
+      } else if (dropdownValue_name == "Title") {
+// Sort by Title
+        dataListe.sort((a, b) => a["Title"].compareTo(b["Title"]));
+        if (dropdownValue_order) {
+          dataListe = dataListe.reversed.toList();
+        }
+        for (int j = 0; j < dataListe.length; j++) {
+          _control.addList(
+            dataListe[j]["Image URL"],
+            dataListe[j]["Title"],
+            dataListe[j]["Subtitle"],
+            dataListe[j]["Salary"].toString(),
+            dataListe[j]["jobs_id"],
+            dataListe[j]["Description"],
+          );
+        }
+      }
+      print(dataListe.length);
+      //print(dataListe);
       print('Veri Çekildi');
       // You can use the data in the dataList here
     } catch (e) {
@@ -158,21 +161,48 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          CircleAvatar(
+          CircleAvatar(radius: 35,
             backgroundImage: AssetImage("lib/images/icon.png"),
           ),
+          SizedBox(width: 15,),
+          Text("Jobify",style: TextStyle(
+            fontSize: 40,
+            fontStyle:FontStyle.normal ,
+            fontWeight: FontWeight.w400,
+            color: const Color.fromARGB(255, 70, 96, 200)
+          ),),
           Spacer(),
-          IconButton(
-            icon: Icon(Icons.home_outlined, color: KColors.primary),
+          /*ListTile(
+            leading: Icon(Icons.home_outlined, color: KColors.primary),
+            title: Text("HomePage"),
+          ),*/
+          TextButton(
             onPressed: () {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
               );
             },
+            child: Row(
+              children: [
+                Icon(Icons.home_outlined, color: KColors.primary),
+                Text(
+                  "Home",
+                  style: TextStyle(color: KColors.primary),
+                )
+              ],
+            ),
           ),
-          IconButton(
-            icon: Icon(Icons.bookmark_border_rounded, color: KColors.icon),
+          TextButton(
+            child: Row(
+              children: [
+                Icon(Icons.bookmark_border_rounded, color: KColors.icon),
+                Text(
+                  "Saved Jobs",
+                  style: TextStyle(color: KColors.subtitle),
+                )
+              ],
+            ),
             onPressed: () {
               setState(() {
                 Navigator.pushReplacement(context,
@@ -180,15 +210,30 @@ class _HomePageState extends State<HomePage> {
               });
             },
           ),
-          IconButton(
-            icon: Icon(Icons.person_outline_rounded, color: KColors.icon),
+          TextButton(
+            child: Row(
+              children: [
+                Icon(Icons.person_outline_rounded, color: KColors.icon),
+                Text(
+                  "Profile",
+                  style: TextStyle(color: KColors.subtitle),
+                )
+              ],
+            ),
             onPressed: () {
               Get.to(UserProfilePage());
             },
           ),
-          IconButton(
-            icon:
+          TextButton(
+            child: Row(
+              children: [
                 Icon(Icons.admin_panel_settings_outlined, color: KColors.icon),
+                Text(
+                  "Job Panel",
+                  style: TextStyle(color: KColors.subtitle),
+                )
+              ],
+            ),
             onPressed: () {
               Get.to(AdsPanel());
             },
@@ -210,99 +255,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _header(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 12),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Hello",
-              style: TextStyle(
-                fontSize: 15,
-                color: KColors.subtitle,
-                fontWeight: FontWeight.w500,
-              )),
-          SizedBox(
-            height: 6,
-          ),
-          Text("Find your perfect job",
-              style: TextStyle(
-                  fontSize: 20,
-                  color: KColors.title,
-                  fontWeight: FontWeight.bold)),
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                        color: KColors.lightGrey,
-                        borderRadius: BorderRadius.circular(5)),
-                    child:
-                        SearchBarr() /* Text(
-                    "What are you looking for?",
-                    style: TextStyle(fontSize: 15, color: KColors.subtitle),
-                  ),*/
-                    ),
-              ),
-              SizedBox(
-                width: 16,
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-/*
-  Widget _recommendedSection(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      margin: EdgeInsets.symmetric(vertical: 12),
-      height: 200,
-      width: MediaQuery.of(context).size.width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Recommended",
-            style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
-          ),
-          SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: savedJobListt.length,
-              itemBuilder: (BuildContext context, int index) {
-                return savedJobListt[index];
-                //todo
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-*/
-
   Widget _recommendedJob(
     BuildContext context, {
     required String img,
     required String company,
     required String title,
     required String sub,
-    required bool isSaved,
+    required String id,
     bool isActive = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: GestureDetector(
         onTap: () {
-          Navigator.push(context, JobDetailPage.getJobDetail());
+          Get.to(JobDetailPage(), arguments: id);
         },
         child: AspectRatio(
           aspectRatio: 1.3,
@@ -316,8 +282,8 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 30,
-                  width: 30,
+                  height: 40,
+                  width: 40,
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: isActive ? Colors.white : KColors.lightGrey,
@@ -325,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Image.asset(img),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 6),
                 Text(
                   company,
                   style: TextStyle(
@@ -358,57 +324,152 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _recentPostedJob(BuildContext context) {
-    const List<String> orderlist = <String>['ascending', 'descending'];
-    const List<String> namelist = <String>[
-      'Name','Salary',
-      
-    ];
-    /* List<Widget> recentJobList = [
-      _jobCard(context,
-          img: Images.gitlab,
-          title: "Gitlab",
-          subtitle: "UX Designer",
-          salery: "\$78,000"),
-      _jobCard(context,
-          img: Images.bitbucket,
-          title: "Bitbucket",
-          subtitle: "UX Designer",
-          salery: "\$45,000"),
-      _jobCard(context,
-          img: Images.slack,
-          title: "Slack",
-          subtitle: "UX Designer",
-          salery: "\$65,000"),
-      _jobCard(context,
-          img: Images.dropbox,
-          title: "Dropbox",
-          subtitle: "UX Designer",
-          salery: "\$95,000"),
-    ];
-    recentJobglobal = recentJobList;*/
+  Widget _header(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      margin: EdgeInsets.symmetric(vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("Hello",
+              style: TextStyle(
+                fontSize: 25,
+                color: KColors.subtitle,
+                fontWeight: FontWeight.w500,
+              )),
+          SizedBox(
+            height: 6,
+          ),
+          Text("Find your perfect job",
+              style: TextStyle(
+                  fontSize: 35,
+                  color: KColors.title,
+                  fontWeight: FontWeight.bold)),
+          SizedBox(
+            height: 10,
+          ),
           Row(
             children: [
-              Text(
-                "Recent posted",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: KColors.title),
+              Expanded(
+                child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                        color: KColors.lightGrey,
+                        borderRadius: BorderRadius.circular(5)),
+                    child:
+                        SearchBarr() /* Text(
+                    "What are you looking for?",
+                    style: TextStyle(fontSize: 15, color: KColors.subtitle),
+                  ),*/
+                    ),
               ),
               SizedBox(
-                width: 8,
+                width: 16,
               ),
-              dropdownbutton(orderlist),
-              SizedBox(
-                width: 8,
-              ),
-              dropdownbutton(namelist),
             ],
-          ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _recommendedSection(BuildContext context) {
+    const List<String> orderlist = <String>['ascending', 'descending'];
+    const List<String> namelist = <String>[
+      'Name',
+      'Salary',
+    ];
+    List<Widget> recomendJobList = [
+      _recommendedJob(context,
+          id: "",
+          img: Images.gitlab,
+          title: "Gitlab",
+          company: "UX Designer",
+          sub: "\$78,000"),
+      _recommendedJob(context,
+          id: "1",
+          img: Images.gitlab,
+          title: "Gitlab",
+          company: "UX Designer",
+          sub: "\$78,000"),
+      _recommendedJob(context,
+          img: Images.gitlab,
+          id: "1",
+          title: "Gitlab",
+          company: "UX Designer",
+          sub: "\$78,000"),
+    ];
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: EdgeInsets.symmetric(vertical: 12),
+        height: 200,
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /*Text(
+              "Recommended",
+              style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
+            ),
+            SizedBox(height: 10),
+            Expanded(
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  recomendJobList[0],
+                  recomendJobList[1],
+                ],
+              ),
+            ),*/
+            Row(
+              children: [
+                Text(
+                  "Recent posted",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: KColors.title),
+                ),
+                SizedBox(
+                  width: 8,
+                ),
+                dropdownbutton(orderlist),
+                SizedBox(
+                  width: 8,
+                ),
+                dropdownbutton(namelist),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _recentPostedJob(BuildContext context) {
+    /*const List<String> orderlist = <String>['ascending', 'descending'];
+    const List<String> namelist = <String>[
+      'Name',
+      'Salary',
+    ];*/
+    /*List<Widget> recentJobList = [
+      _recommendedJob(context,
+          img: Images.gitlab,
+          title: "Gitlab",
+          company: "UX Designer",
+          sub: "\$78,000",
+          id: "1"),
+          
+    ];
+    recentJobglobal = recentJobList;*/
+    return Container(
+      width: 450,
+
+      // margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Column(
+        //crossAxisAlignment: CrossAxisAlignment.start,
+        //mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          //SizedBox(height: 8,),
           Obx(
             () => ListView.builder(
               shrinkWrap: true,
@@ -482,19 +543,17 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: KColors.background,
       //bottomNavigationBar: BottomMenuBar(),
-      body: SafeArea(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _appBar(context),
-                _header(context),
-                // _recommendedSection(context),
-                _recentPostedJob(context)
-              ],
-            ),
+      body: Container(
+        //width: MediaQuery.of(context).size.width,
+        child: SingleChildScrollView(
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _appBar(context),
+              _header(context),
+              _recommendedSection(context),
+              _recentPostedJob(context)
+            ],
           ),
         ),
       ),

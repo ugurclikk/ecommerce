@@ -11,13 +11,21 @@ class RecentModel extends GetxController {
   var list = [].obs;
   var savedlist = [].obs;
   void addList(
-      String img, String title, String subtitle, String salery, String id) {
+    String img,
+    String title,
+    String subtitle,
+    String salery,
+    String id,
+    String desc,
+  ) {
     list.add(
-      _jobCard(
+      _recommendedJob(
+        desc: desc,
+        company: title,
         img: img,
         title: title,
-        subtitle: subtitle,
-        salery: salery,
+        sub: subtitle,
+        isActive: false,
         id: id,
       ),
     );
@@ -106,6 +114,93 @@ Widget _jobCard({
             ],
           )
         ],
+      ),
+    ),
+  );
+}
+
+Widget _recommendedJob({
+  required String img,
+  required String company,
+  required String title,
+  required String sub,
+  required String id,
+  required String desc,
+  bool isActive = false,
+}) {
+  return Padding(
+    padding: const EdgeInsets.all(8),
+    child: InkWell(
+      onTap: () {
+        Get.to(JobDetailPage(), arguments: id);
+      },
+      child: AspectRatio(
+        aspectRatio: 1.3,
+        child: Container(
+          decoration: BoxDecoration(
+            color: isActive ? KColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(7),
+          ),
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    height: 100,
+                    width: 100,
+                    padding: EdgeInsets.all(1),
+                    decoration: BoxDecoration(
+                      color: isActive ? Colors.white : KColors.lightGrey,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Image.network(img),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isActive ? Colors.white : KColors.title,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        company,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isActive ? Colors.white38 : KColors.subtitle,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        sub,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isActive ? Colors.white38 : KColors.subtitle,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        desc,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isActive ? Colors.white38 : KColors.subtitle,
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     ),
   );

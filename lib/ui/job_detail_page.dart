@@ -82,7 +82,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           savedJobsSnapshot.docs.forEach((doc) {
             Map<String, dynamic> savedData = doc.data() as Map<String, dynamic>;
             if (savedData["jobs_id"] == currentID) {
-              print(savedData);
+             // print(savedData);
               setState(() {
                 isSaved = savedData["isSaved"];
               });
@@ -334,7 +334,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   'Image URL': dataList[0]["Image URL"],
                   'Title': dataList[0]["Title"],
                   'Subtitle': dataList[0]["Subtitle"],
-                  'Salary':int.parse( dataList[0]["Salary"]),
+                  'Salary': dataList[0]["Salary"],
                   'Description': dataList[0]["Description"],
                   "isSaved": isSaved,
                 };

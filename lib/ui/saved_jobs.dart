@@ -52,7 +52,7 @@ class _MyAppState extends State<SavedJobs> {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         setState(() {
           _controller.addSavedList(data["Image URL"], data["Title"],
-              data["Subtitle"], data["Salary"], data["jobs_id"]);
+              data["Subtitle"], data["Salary"].toString(), data["jobs_id"]);
         });
       });
 
