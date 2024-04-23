@@ -216,10 +216,12 @@ class _JobDetailPageState extends State<JobDetailPage> {
   Widget _jobDescription(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Column(
+            children: [
+ Text(
             "Job Description", //dataList[0]["Descriptipn"]
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
@@ -229,6 +231,32 @@ class _JobDetailPageState extends State<JobDetailPage> {
             //"You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
             style: TextStyle(fontSize: 14, color: KColors.subtitle),
           ),
+            ],
+          ),
+          SizedBox(width: 40,),
+         Column(children: [Text(
+            "Location", //dataList[0]["Descriptipn"]
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          Text(
+            dataList[0]["Location"],
+            //"You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
+            style: TextStyle(fontSize: 14, color: KColors.subtitle),
+          ),],),
+          SizedBox(width: 40,),
+            Column(children: [Text(
+            "Type", //dataList[0]["Descriptipn"]
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          
+          Text(
+            dataList[0]["job_type"],
+            //"You will be Gitlab's dedicated UI/Ux designer, reporting to the chief Technology Officer. You will come up with the user experience for few product features, including developing conceptual design to test with clients and then. Share the...",
+            style: TextStyle(fontSize: 14, color: KColors.subtitle),
+          ),],)
+           
           /*TextButton(
             onPressed: () {},
             style: ButtonStyle(

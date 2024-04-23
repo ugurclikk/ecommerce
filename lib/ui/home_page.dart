@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/theme/images.dart';
 import 'package:flutter_job_portal/ui/admin_panel.dart';
@@ -87,15 +89,33 @@ class _HomePageState extends State<HomePage> {
       dataList.clear();
       QuerySnapshot usersSnapshot =
           await FirebaseFirestore.instance.collection('users').get();
-
+      QuerySnapshot addedJobsSnapshot;
       for (var userDoc in usersSnapshot.docs) {
         //print(userDoc.id);
-
-        QuerySnapshot addedJobsSnapshot = await userDoc.reference
-            .collection("added_jobs")
-            //.orderBy(dropdownValue_name, descending: dropdownValue_order)
-            .get();
-
+        if (_controller.selectList[0]) {
+          addedJobsSnapshot = await userDoc.reference
+              .collection("added_jobs")
+              .where('job_type', isEqualTo: 'Remote')
+              //.orderBy(dropdownValue_name, descending: dropdownValue_order)
+              .get();
+        } else if (_controller.selectList[1]) {
+          addedJobsSnapshot = await userDoc.reference
+              .collection("added_jobs")
+              .where('job_type', isEqualTo: 'Face-to-Face')
+              //.orderBy(dropdownValue_name, descending: dropdownValue_order)
+              .get();
+        } else if (_controller.selectList[2]) {
+          addedJobsSnapshot = await userDoc.reference
+              .collection("added_jobs")
+              .where('job_type', isEqualTo: 'Hybrid')
+              //.orderBy(dropdownValue_name, descending: dropdownValue_order)
+              .get();
+        } else {
+          addedJobsSnapshot = await userDoc.reference
+              .collection("added_jobs")
+              //.orderBy(dropdownValue_name, descending: dropdownValue_order)
+              .get();
+        }
         for (var doc in addedJobsSnapshot.docs) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
           print(addedJobsSnapshot.size);
@@ -115,13 +135,14 @@ class _HomePageState extends State<HomePage> {
         }
         for (int j = 0; j < dataListe.length; j++) {
           _control.addList(
-            dataListe[j]["Image URL"],
-            dataListe[j]["Title"],
-            dataListe[j]["Subtitle"],
-            dataListe[j]["Salary"].toString(),
-            dataListe[j]["jobs_id"],
-            dataListe[j]["Description"],
-          );
+              dataListe[j]["Image URL"],
+              dataListe[j]["Title"],
+              dataListe[j]["Subtitle"],
+              dataListe[j]["Salary"].toString(),
+              dataListe[j]["jobs_id"],
+              dataListe[j]["Description"],
+              dataListe[j]["Location"],
+              dataListe[j]["job_type"]);
         }
       } else if (dropdownValue_name == "Title") {
 // Sort by Title
@@ -131,13 +152,14 @@ class _HomePageState extends State<HomePage> {
         }
         for (int j = 0; j < dataListe.length; j++) {
           _control.addList(
-            dataListe[j]["Image URL"],
-            dataListe[j]["Title"],
-            dataListe[j]["Subtitle"],
-            dataListe[j]["Salary"].toString(),
-            dataListe[j]["jobs_id"],
-            dataListe[j]["Description"],
-          );
+              dataListe[j]["Image URL"],
+              dataListe[j]["Title"],
+              dataListe[j]["Subtitle"],
+              dataListe[j]["Salary"].toString(),
+              dataListe[j]["jobs_id"],
+              dataListe[j]["Description"],
+              dataListe[j]["Location"],
+              dataListe[j]["job_type"]);
         }
       }
       print(dataListe.length);
@@ -161,16 +183,21 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          CircleAvatar(radius: 35,
+          CircleAvatar(
+            radius: 35,
             backgroundImage: AssetImage("lib/images/icon.png"),
           ),
-          SizedBox(width: 15,),
-          Text("Jobify",style: TextStyle(
-            fontSize: 40,
-            fontStyle:FontStyle.normal ,
-            fontWeight: FontWeight.w400,
-            color: const Color.fromARGB(255, 70, 96, 200)
-          ),),
+          SizedBox(
+            width: 15,
+          ),
+          Text(
+            "Jobify",
+            style: TextStyle(
+                fontSize: 40,
+                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.w400,
+                color: const Color.fromARGB(255, 70, 96, 200)),
+          ),
           Spacer(),
           /*ListTile(
             leading: Icon(Icons.home_outlined, color: KColors.primary),
@@ -374,72 +401,93 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _recommendedSection(BuildContext context) {
+    bool _remoteSelected = true;
+    bool _faceToFaceSelected = false;
+    bool _hybridSelected = false;
     const List<String> orderlist = <String>['ascending', 'descending'];
     const List<String> namelist = <String>[
       'Name',
       'Salary',
     ];
-    List<Widget> recomendJobList = [
-      _recommendedJob(context,
-          id: "",
-          img: Images.gitlab,
-          title: "Gitlab",
-          company: "UX Designer",
-          sub: "\$78,000"),
-      _recommendedJob(context,
-          id: "1",
-          img: Images.gitlab,
-          title: "Gitlab",
-          company: "UX Designer",
-          sub: "\$78,000"),
-      _recommendedJob(context,
-          img: Images.gitlab,
-          id: "1",
-          title: "Gitlab",
-          company: "UX Designer",
-          sub: "\$78,000"),
-    ];
+
     return Center(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         margin: EdgeInsets.symmetric(vertical: 12),
-        height: 200,
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /*Text(
-              "Recommended",
-              style: TextStyle(fontWeight: FontWeight.bold, color: KColors.title),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: ListView(
-                scrollDirection: Axis.horizontal,
+        height: 600,
+        //width: MediaQuery.of(context).size.width,
+        child: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
                 children: [
-                  recomendJobList[0],
-                  recomendJobList[1],
+                  dropdownbutton(orderlist),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  dropdownbutton(namelist),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  CheckboxListTile(
+                    activeColor: KColors.primary,
+                    title: Text('Remote'),
+                    value: _controller.getCheck("remote"),
+                    onChanged: (value) async {
+                      setState(() {
+                        _remoteSelected = value!;
+                        if (_remoteSelected) {
+                          _faceToFaceSelected = false;
+                          _hybridSelected = false;
+                        }
+                        _controller.changeCheck(_remoteSelected,
+                            _faceToFaceSelected, _hybridSelected);
+                      });
+                      _controller.list.clear();
+                      await GetDatas();
+                    },
+                  ),
+                  CheckboxListTile(
+                    activeColor: KColors.primary,
+                    title: Text('Face to Face'),
+                    value: _controller.getCheck("face"),
+                    onChanged: (value) async {
+                      setState(() {
+                        _faceToFaceSelected = value!;
+                        if (_faceToFaceSelected) {
+                          _remoteSelected = false;
+                          _hybridSelected = false;
+                        }
+                        _controller.changeCheck(_remoteSelected,
+                            _faceToFaceSelected, _hybridSelected);
+                      });
+                      _controller.list.clear();
+                      await GetDatas();
+                    },
+                  ),
+                  CheckboxListTile(
+                      activeColor: KColors.primary,
+                      title: Text('Hybrid'),
+                      value: _controller.getCheck("hybrid"),
+                      onChanged: (value) async {
+                        setState(() {
+                          _hybridSelected = value!;
+                          if (_hybridSelected) {
+                            _remoteSelected = false;
+                            _faceToFaceSelected = false;
+                          }
+                          _controller.changeCheck(_remoteSelected,
+                              _faceToFaceSelected, _hybridSelected);
+                        });
+                        _controller.list.clear();
+                        await GetDatas();
+                        print(value);
+                      })
                 ],
               ),
-            ),*/
-            Row(
-              children: [
-                Text(
-                  "Recent posted",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: KColors.title),
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                dropdownbutton(orderlist),
-                SizedBox(
-                  width: 8,
-                ),
-                dropdownbutton(namelist),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -462,9 +510,8 @@ class _HomePageState extends State<HomePage> {
     ];
     recentJobglobal = recentJobList;*/
     return Container(
-      width: 450,
-
-      // margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      width: 100,
+      margin: EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 200),
       child: Column(
         //crossAxisAlignment: CrossAxisAlignment.start,
         //mainAxisAlignment: MainAxisAlignment.start,
@@ -551,8 +598,14 @@ class _HomePageState extends State<HomePage> {
             children: [
               _appBar(context),
               _header(context),
-              _recommendedSection(context),
-              _recentPostedJob(context)
+              Row(
+                //crossAxisAlignment: CrossAxisAlignment.start,
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(child: _recommendedSection(context)),
+                  Expanded(flex: 3, child: _recentPostedJob(context))
+                ],
+              )
             ],
           ),
         ),

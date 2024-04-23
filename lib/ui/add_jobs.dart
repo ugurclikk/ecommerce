@@ -5,6 +5,8 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_job_portal/theme/colors.dart';
 import 'package:flutter_job_portal/ui/home_page.dart';
 import 'package:flutter_job_portal/ui/job_detail_page.dart';
@@ -25,6 +27,8 @@ TextEditingController _descriptionController = TextEditingController();
 final _formKey = GlobalKey<FormState>();
 String id = "";
 String url = "";
+String _selectedlocation = '';
+String _selectedOption = '';
 Future<void> downloadFile(String filePath) async {
   try {
     String downloadURL = await storage.ref(filePath).getDownloadURL();
@@ -56,9 +60,7 @@ Future<void> addDataToFirestore(Map<String, dynamic> data) async {
       // Firestore koleksiyon referansı oluştur
       CollectionReference collectionReference =
           FirebaseFirestore.instance.collection('users');
-      await collectionReference.doc(uid).set({
-        "access":"add data"
-      });
+      await collectionReference.doc(uid).set({"access": "add data"});
       // Kullanıcının UID'siyle belge oluştur
       await collectionReference.doc(uid).collection("added_jobs").add(data);
 
@@ -173,7 +175,7 @@ class _InputPageState extends State<InputPage> {
                 borderRadius: BorderRadius.circular(16),
                 color: Color.fromARGB(141, 62, 97, 237)),
             width: 600,
-            height: 700,
+            height: 1000,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Form(
@@ -188,8 +190,8 @@ class _InputPageState extends State<InputPage> {
                           await _getImageAndUploadToFirebase();
                         }, // Fotoğraf seçme işlevi buraya ekleniyor
                         child: Container(
-                          width: 150,
-                          height: 150,
+                          width: 120,
+                          height: 120,
                           color: KColors.background,
                           child: img.isNotEmpty
                               ? Image.network(
@@ -204,7 +206,7 @@ class _InputPageState extends State<InputPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 5),
                     TextFormField(
                       controller: _titleController,
                       decoration: InputDecoration(
@@ -231,7 +233,7 @@ class _InputPageState extends State<InputPage> {
                       },
                     ),
                     SizedBox(
-                      height: 20,
+                      height: 5,
                     ),
                     TextFormField(
                       controller: _subtitleController,
@@ -259,9 +261,36 @@ class _InputPageState extends State<InputPage> {
                       },
                     ),
                     SizedBox(
-                      height: 15,
+                      height: 5,
                     ),
                     TextFormField(
+                      controller: null,
+                      decoration: InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelStyle:
+                            TextStyle(color: Colors.black38, fontSize: 20),
+                        labelText: 'Location',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Location';
+                        }
+                       
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedlocation = value;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 5),
+                     TextFormField(
                       controller: _salaryController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -289,11 +318,11 @@ class _InputPageState extends State<InputPage> {
                         });
                       },
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 10),
                     TextFormField(
                       controller: _descriptionController,
-                      maxLines: 6,
-                      minLines: 6,
+                      maxLines: 4,
+                      minLines: 4,
                       decoration: InputDecoration(
                         //isDense: true,
                         //contentPadding: EdgeInsets.fromLTRB(0, 150, 150, 0),
@@ -319,8 +348,58 @@ class _InputPageState extends State<InputPage> {
                         });
                       },
                     ),
+                    
                     SizedBox(
-                      height: 15,
+                      height: 2,
+                    ),
+                          Text("Select Job type:"),
+
+                    SizedBox(
+                      
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: RadioListTile(
+                              title: Text('Remote'),
+                              value: 'Remote',
+                              groupValue: _selectedOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedOption = value.toString();
+                                });
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile(
+                              title: Text('Face-to-Face'),
+                              value: 'Face-to-Face',
+                              groupValue: _selectedOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedOption = value.toString();
+                                });
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile(
+                              title: Text('Hybrid'),
+                              value: 'Hybrid',
+                              groupValue: _selectedOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedOption = value.toString();
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 6,
                     ),
                     Center(
                       child: TextButton(
@@ -339,6 +418,8 @@ class _InputPageState extends State<InputPage> {
                             'Subtitle': subtitle,
                             'Salary': int.parse(salary),
                             'Description': Description,
+                            "Location":_selectedlocation,
+                            "job_type":_selectedOption,
                             "isSaved": false
                           };
                           _controller.clearlist();

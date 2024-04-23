@@ -60,7 +60,8 @@ class _SearchBarState extends State<SearchBarr> {
                     data["Title"],
                     data["Subtitle"],
                     data["Salary"].toString(),
-                    data["jobs_id"],data["Description"]);
+                    data["jobs_id"],data["Description"],data["Location"],
+            data["job_type"]);
               }
             }
           });
@@ -87,7 +88,8 @@ class _SearchBarState extends State<SearchBarr> {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
               controller.addList(data["Image URL"], data["Title"],
-                  data["Subtitle"], data["Salary"].toString(), data["jobs_id"],data["Description"]);
+                  data["Subtitle"], data["Salary"].toString(), data["jobs_id"],data["Description"],data["Location"],
+            data["job_type"]);
             }
           });
         }

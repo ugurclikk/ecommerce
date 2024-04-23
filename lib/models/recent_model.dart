@@ -10,6 +10,35 @@ import 'package:get/get.dart';
 class RecentModel extends GetxController {
   var list = [].obs;
   var savedlist = [].obs;
+  var selectList = [].obs;
+  RecentModel() {
+    bool _remoteSelected = false;
+    bool _faceToFaceSelected = false;
+    bool _hybridSelected = false;
+    selectList.add(_remoteSelected);
+    selectList.add(_faceToFaceSelected);
+    selectList.add(_hybridSelected);
+  }
+  bool getCheck(var value) {
+    switch (value) {
+      case "remote":
+        return selectList[0];
+      case "face":
+        return selectList[1];
+      case "hybrid":
+        return selectList[2];
+      default:
+        return false;
+    }
+  }
+
+  void changeCheck(var remote,var face,var hybrid) {
+    selectList[0]=remote;
+    selectList[1]=face;
+    selectList[2]=hybrid;
+    update();
+  }
+
   void addList(
     String img,
     String title,
@@ -17,9 +46,13 @@ class RecentModel extends GetxController {
     String salery,
     String id,
     String desc,
+     String loc,
+    String type,
   ) {
     list.add(
       _recommendedJob(
+        location: loc,
+        type: type,
         desc: desc,
         company: title,
         img: img,
@@ -125,6 +158,8 @@ Widget _recommendedJob({
   required String title,
   required String sub,
   required String id,
+   required String location,
+  required String type,
   required String desc,
   bool isActive = false,
 }) {
@@ -134,72 +169,73 @@ Widget _recommendedJob({
       onTap: () {
         Get.to(JobDetailPage(), arguments: id);
       },
-      child: AspectRatio(
-        aspectRatio: 1.3,
-        child: Container(
-          decoration: BoxDecoration(
-            color: isActive ? KColors.primary : Colors.white,
-            borderRadius: BorderRadius.circular(7),
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    height: 100,
-                    width: 100,
-                    padding: EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: isActive ? Colors.white : KColors.lightGrey,
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: Image.network(img),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isActive ? KColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  height: 100,
+                  width: 100,
+                  padding: EdgeInsets.all(1),
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.white : KColors.lightGrey,
+                    borderRadius: BorderRadius.circular(7),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isActive ? Colors.white : KColors.title,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Image.network(img),
+                ),
+                SizedBox(
+                  width: 15,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isActive ? Colors.white : KColors.title,
+                        fontWeight: FontWeight.bold,
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        company,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isActive ? Colors.white38 : KColors.subtitle,
-                        ),
+                    ),
+                    SizedBox(height: 6),
+                    
+                    Text(
+                      sub,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isActive ? Colors.white38 : KColors.subtitle,
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        sub,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isActive ? Colors.white38 : KColors.subtitle,
-                        ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      location,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isActive ? Colors.white38 : KColors.subtitle,
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        desc,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isActive ? Colors.white38 : KColors.subtitle,
-                        ),
+                    ),
+                     SizedBox(height: 6),
+                    Text(
+                      type,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isActive ? Colors.white38 : KColors.subtitle,
                       ),
-                    ],
-                  )
-                ],
-              ),
-            ],
-          ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ],
         ),
       ),
     ),
